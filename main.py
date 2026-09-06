@@ -8,7 +8,6 @@ Usage:
 
 import sys
 import youtube_scraper
-import reddit_scraper
 
 
 def main():

@@ -11,13 +11,35 @@ KEYWORDS = [
     "peninjauan kembali MA",
     "mafia peradilan",
     "kode etik hakim agung",
-    "susah akses putusan MA",
-    "website Mahkamah Agung",
+    "SIPP error",
+    "e-court kendala",
+    "aplikasi pengadilan bermasalah",
     "direktori putusan MA",
 ]
 
-# (Opsional) batasi pencarian YouTube ke kanal berita tertentu biar hasil lebih representatif publik umum.
-# Kosongkan list ini kalau mau search lintas semua kanal.
+# Term wajib: video cuma disimpan kalau title-nya ngandung minimal SATU dari term ini
+# (case-insensitive, substring match). Ini nyaring hasil "relevance fallback" YouTube
+# yang suka nyempil (drama, DJ remix, dll) pas keyword pencarian terlalu spesifik/panjang
+# dan gak ada video yang beneran match.
+RELEVANCE_FILTER_TERMS = [
+    "mahkamah agung",
+    "mahkamah konstitusi",
+    "pengadilan",
+    "hakim",
+    "putusan",
+    "kasasi",
+    "sipp",
+    "e-court",
+    "ecourt",
+    "yudisial",
+    "praperadilan",
+    " ma ",  # spasi di kedua sisi biar gak nge-match kata "makan", "mana", dll
+]
+
+# (Opsional) batasi pencarian YouTube ke kanal berita tertentu biar hasil lebih representatif
+# publik umum. Kosongkan list ini kalau mau search lintas semua kanal.
+# CATATAN: kalau diisi, quota search terpakai per-channel (dikali jumlah channel),
+# jadi kurangin MAX_VIDEOS_PER_KEYWORD kalau quota mepet.
 CHANNEL_HANDLES = [
     "@KompasTV",
     "@CNNIndonesia",

@@ -31,9 +31,73 @@ logger = logging.getLogger(__name__)
 API_KEY = os.getenv("YOUTUBE_API_KEY")
 youtube = build("youtube", "v3", developerKey=API_KEY)
 
+VIDEO_CSV = "output/youtube_videos.csv"
+COMMENT_CSV = "output/youtube_comments.csv"
 
-def search_videos(keyword, max_results=15):
-    """Search video by keyword, return list of video_id + metadata."""
+VIDEO_FIELDS = ["video_id", "title", "channel", "published_at", "keyword"]
+COMMENT_FIELDS = [
+    "video_id",
+    "comment_id",
+    "author",
+    "text",
+    "like_count",
+    "published_at",
+    "reply_count",
+    "video_title",
+    "channel",
+    "keyword",
+]
+
+
+def load_existing_ids(filepath, id_field):
+    """Baca CSV lama (kalau ada), balikin set of id yang udah pernah discrap."""
+    ids = set()
+    if os.path.exists(filepath):
+        with open(filepath, "r", newline="", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                ids.add(row[id_field])
+    return ids
+
+
+def append_rows(filepath, rows, fieldnames):
+    """Tambahin baris baru ke CSV. Nulis header cuma kalau file belum ada."""
+    if not rows:
+        return
+    file_exists = os.path.exists(filepath)
+    with open(filepath, "a", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        if not file_exists:
+            writer.writeheader()
+        writer.writerows(rows)
+
+
+def is_relevant(title):
+    """True kalau title ngandung minimal satu term wajib (case-insensitive)."""
+    text = f" {title.lower()} "
+    return any(term.lower() in text for term in config.RELEVANCE_FILTER_TERMS)
+
+
+def resolve_channel_ids(handles):
+    """Convert @handle jadi channel_id (dibutuhin buat filter search per channel)."""
+    ids = []
+    for handle in handles:
+        h = handle.lstrip("@")
+        try:
+            response = youtube.channels().list(part="id", forHandle=h).execute()
+            items = response.get("items", [])
+            if items:
+                ids.append(items[0]["id"])
+            else:
+                logger.warning(f"Handle @{h} gak ketemu channel_id-nya, di-skip")
+        except HttpError as e:
+            logger.warning(f"Gagal resolve channel @{h}: {e}")
+    return ids
+
+
+def search_videos(keyword, max_results=15, channel_id=None):
+    """Search video by keyword, return list of video_id + metadata.
+    Kalau channel_id diisi, search dibatasi ke channel itu doang."""
     published_after = (
         datetime.now(timezone.utc) - timedelta(days=config.DAYS_LOOKBACK)
     ).isoformat()
@@ -42,18 +106,21 @@ def search_videos(keyword, max_results=15):
     next_page_token = None
 
     while len(videos) < max_results:
+        params = dict(
+            q=keyword,
+            part="id,snippet",
+            type="video",
+            order="relevance",
+            publishedAfter=published_after,
+            relevanceLanguage="id",
+            maxResults=min(50, max_results - len(videos)),
+            pageToken=next_page_token,
+        )
+        if channel_id:
+            params["channelId"] = channel_id
+
         try:
-            request = youtube.search().list(
-                q=keyword,
-                part="id,snippet",
-                type="video",
-                order="relevance",
-                publishedAfter=published_after,
-                relevanceLanguage="id",
-                maxResults=min(50, max_results - len(videos)),
-                pageToken=next_page_token,
-            )
-            response = request.execute()
+            response = youtube.search().list(**params).execute()
         except HttpError as e:
             logger.error(f"Search error for keyword '{keyword}': {e}")
             break
@@ -73,7 +140,7 @@ def search_videos(keyword, max_results=15):
         if not next_page_token:
             break
 
-    logger.info(f"Keyword '{keyword}': ditemukan {len(videos)} video")
+    logger.info(f"Keyword '{keyword}' (channel_id={channel_id}): ditemukan {len(videos)} video mentah")
     return videos
 
 
@@ -120,15 +187,26 @@ def get_comments(video_id, max_comments=200):
 
 
 def run():
-    all_videos = []
-    all_comments = []
+    existing_video_ids = load_existing_ids(VIDEO_CSV, "video_id")
+    logger.info(f"Video yang udah ada di {VIDEO_CSV}: {len(existing_video_ids)}")
 
+    channel_ids = resolve_channel_ids(config.CHANNEL_HANDLES) if config.CHANNEL_HANDLES else []
+    if config.CHANNEL_HANDLES and not channel_ids:
+        logger.warning("CHANNEL_HANDLES diisi tapi gak ada yang berhasil di-resolve, search jalan tanpa restriction")
+
+    all_videos = []
     for keyword in config.KEYWORDS:
-        videos = search_videos(keyword, max_results=config.MAX_VIDEOS_PER_KEYWORD)
-        all_videos.extend(videos)
+        if channel_ids:
+            for cid in channel_ids:
+                videos = search_videos(keyword, max_results=config.MAX_VIDEOS_PER_KEYWORD, channel_id=cid)
+                all_videos.extend(videos)
+                time.sleep(0.3)
+        else:
+            videos = search_videos(keyword, max_results=config.MAX_VIDEOS_PER_KEYWORD)
+            all_videos.extend(videos)
         time.sleep(0.5)  # jaga-jaga rate limit
 
-    # Dedup video by video_id (bisa muncul di lebih dari satu keyword)
+    # Dedup video by video_id (bisa muncul di lebih dari satu keyword/channel dalam run yang sama)
     seen = set()
     unique_videos = []
     for v in all_videos:
@@ -136,31 +214,43 @@ def run():
             seen.add(v["video_id"])
             unique_videos.append(v)
 
-    logger.info(f"Total video unik: {len(unique_videos)}")
+    # Buang video yang title-nya gak ngandung term wajib apapun (nyaring hasil
+    # "relevance fallback" YouTube yang ngasal - drama, DJ remix, dll)
+    before_filter = len(unique_videos)
+    unique_videos = [v for v in unique_videos if is_relevant(v["title"])]
+    dropped_irrelevant = before_filter - len(unique_videos)
 
-    for v in unique_videos:
+    # Skip video yang udah pernah discrap di run sebelumnya
+    new_videos = [v for v in unique_videos if v["video_id"] not in existing_video_ids]
+    skipped = len(unique_videos) - len(new_videos)
+    logger.info(
+        f"Hasil search: {before_filter} video unik mentah, "
+        f"{dropped_irrelevant} dibuang (gak relevan), "
+        f"{skipped} udah pernah discrap (skip), {len(new_videos)} baru"
+    )
+
+    total_comments = 0
+    for v in new_videos:
         comments = get_comments(v["video_id"])
         for c in comments:
             c["video_title"] = v["title"]
             c["channel"] = v["channel"]
             c["keyword"] = v["keyword"]
-        all_comments.extend(comments)
+
+        # Tulis langsung per-video (append), biar kalau script keputus di tengah
+        # jalan, data yang udah kepegang gak ilang dan run berikutnya gak scrap ulang.
+        append_rows(VIDEO_CSV, [v], VIDEO_FIELDS)
+        append_rows(COMMENT_CSV, comments, COMMENT_FIELDS)
+
+        total_comments += len(comments)
         time.sleep(0.3)
 
-    # Simpan ke CSV
-    with open("output/youtube_videos.csv", "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=unique_videos[0].keys() if unique_videos else [])
-        writer.writeheader()
-        writer.writerows(unique_videos)
-
-    if all_comments:
-        with open("output/youtube_comments.csv", "w", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=all_comments[0].keys())
-            writer.writeheader()
-            writer.writerows(all_comments)
-
-    logger.info(f"Selesai. {len(unique_videos)} video, {len(all_comments)} komentar disimpan.")
-    print(f"Done: {len(unique_videos)} video, {len(all_comments)} komentar -> output/")
+    logger.info(f"Selesai. {len(new_videos)} video baru, {total_comments} komentar baru ditambahkan.")
+    print(
+        f"Done: {len(new_videos)} video baru ditambahkan "
+        f"({dropped_irrelevant} dibuang gak relevan, {skipped} video lama di-skip), "
+        f"{total_comments} komentar baru -> {VIDEO_CSV} / {COMMENT_CSV}"
+    )
 
 
 if __name__ == "__main__":
