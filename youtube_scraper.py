@@ -35,6 +35,12 @@ logger = logging.getLogger(__name__)
 API_KEY = os.getenv("YOUTUBE_API_KEY")
 youtube = build("youtube", "v3", developerKey=API_KEY)
 
+
+class QuotaExceededError(Exception):
+    """Kuota YouTube Data API harian abis - beda dari error search biasa
+    (video privat/dihapus dll) karena SEMUA call berikutnya bakal gagal juga,
+    jadi gak ada gunanya lanjut nyoba keyword lain di run ini."""
+
 VIDEO_CSV = "output/youtube_videos.csv"
 COMMENT_CSV = "output/youtube_comments.csv"
 
@@ -168,6 +174,11 @@ def search_videos(
         try:
             response = youtube.search().list(**params).execute()
         except HttpError as e:
+            reason = ""
+            if e.error_details:
+                reason = e.error_details[0].get("reason", "")
+            if e.resp.status == 429 or reason in ("quotaExceeded", "rateLimitExceeded"):
+                raise QuotaExceededError(str(e)) from e
             logger.error(f"Search error for keyword '{keyword}': {e}")
             break
 
@@ -254,74 +265,145 @@ def year_date_bounds(year):
     return published_after, published_before
 
 
+def load_raw_cache(cache_path):
+    """Load cache mentah kumulatif per tahun kalau udah ada, biar keyword yang
+    udah pernah di-search gak di-search ulang pas nambah keyword baru ke
+    config.py (hemat kuota). Cache lama (dari sebelum ada 'searched_keywords')
+    tetap kebaca - keyword lamanya bakal ke-search ulang sekali doang buat
+    ngisi tracking-nya, abis itu ikut ke-skip juga."""
+    if not os.path.exists(cache_path):
+        return {"searched_keywords": [], "videos": []}
+    with open(cache_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    return {
+        "searched_keywords": data.get("searched_keywords", []),
+        "videos": data.get("videos", []),
+    }
+
+
 def fetch_raw_videos(year=None):
     """Bagian MAHAL - manggil YouTube search API. Cuma dipanggil di mode normal,
     hasilnya di-cache per tahun biar bisa di-refilter tanpa API call lagi.
     Kalau year diisi, search dibatasi ke tahun kalender itu (mode longitudinal
-    2020-2026); kalau enggak, fallback ke DAYS_LOOKBACK terakhir (mode scan biasa)."""
+    2020-2026); kalau enggak, fallback ke DAYS_LOOKBACK terakhir (mode scan biasa).
+
+    Cache per tahun bersifat KUMULATIF dan nyimpen daftar keyword yang udah
+    pernah di-search - jadi kalau config.py nambah keyword baru, run ulang
+    buat tahun yang sama cuma kena biaya kuota buat keyword yang baru aja.
+    Kalau kuota API harian abis di tengah jalan, proses berhenti rapi (gak
+    nyoba semua sisa keyword satu-satu) dan otomatis lanjut dari keyword yang
+    belum sempat di-search pas di-run lagi."""
     channel_ids = resolve_channel_ids(config.CHANNEL_HANDLES) if config.CHANNEL_HANDLES else []
     if config.CHANNEL_HANDLES and not channel_ids:
         logger.warning("CHANNEL_HANDLES diisi tapi gak ada yang berhasil di-resolve, search jalan tanpa restriction")
 
     published_after, published_before = year_date_bounds(year) if year else (None, None)
 
-    all_videos = []
+    cache_path = raw_search_cache_path(year)
+    cache = load_raw_cache(cache_path)
+    all_videos = cache["videos"]
+    searched = set(cache["searched_keywords"])
+    quota_exceeded = False
 
     # Pass 1: keyword institusional per dimensi reputasi, dibatasi ke kanal berita (kalau ada)
     for dimension, keywords in config.KEYWORDS.items():
+        if quota_exceeded:
+            break
         for keyword in keywords:
+            if quota_exceeded:
+                break
             if channel_ids:
                 for cid in channel_ids:
+                    search_key = f"{keyword}@{cid}"
+                    if search_key in searched:
+                        logger.info(f"Keyword '{keyword}' (channel {cid}): udah pernah di-search, skip")
+                        continue
+                    try:
+                        videos = search_videos(
+                            keyword,
+                            max_results=config.MAX_VIDEOS_PER_KEYWORD,
+                            channel_id=cid,
+                            category="institusional",
+                            dimension=dimension,
+                            published_after=published_after,
+                            published_before=published_before,
+                        )
+                    except QuotaExceededError:
+                        quota_exceeded = True
+                        break
+                    all_videos.extend(videos)
+                    searched.add(search_key)
+                    time.sleep(0.3)
+            else:
+                if keyword in searched:
+                    logger.info(f"Keyword '{keyword}': udah pernah di-search, skip (hemat kuota)")
+                    continue
+                try:
                     videos = search_videos(
                         keyword,
                         max_results=config.MAX_VIDEOS_PER_KEYWORD,
-                        channel_id=cid,
                         category="institusional",
                         dimension=dimension,
                         published_after=published_after,
                         published_before=published_before,
                     )
-                    all_videos.extend(videos)
-                    time.sleep(0.3)
-            else:
-                videos = search_videos(
-                    keyword,
-                    max_results=config.MAX_VIDEOS_PER_KEYWORD,
-                    category="institusional",
-                    dimension=dimension,
-                    published_after=published_after,
-                    published_before=published_before,
-                )
+                except QuotaExceededError:
+                    quota_exceeded = True
+                    break
                 all_videos.extend(videos)
+                searched.add(keyword)
             time.sleep(0.5)
 
     # Pass 2: keyword tutorial/how-to soal website/aplikasi MA, LINTAS SEMUA KANAL
     # (gak dibatasi channel_ids - tutorial gini biasanya dari creator individu).
     # Selalu dimension="layanan_digital_ux" - video tutorial ini emang soal itu.
-    for keyword in config.WEBSITE_KEYWORDS:
-        videos = search_videos(
-            keyword,
-            max_results=config.MAX_VIDEOS_PER_KEYWORD,
-            category="tutorial_website",
-            dimension="layanan_digital_ux",
-            published_after=published_after,
-            published_before=published_before,
-        )
-        all_videos.extend(videos)
-        time.sleep(0.5)
+    if not quota_exceeded:
+        for keyword in config.WEBSITE_KEYWORDS:
+            if keyword in searched:
+                logger.info(f"Keyword '{keyword}': udah pernah di-search, skip (hemat kuota)")
+                continue
+            try:
+                videos = search_videos(
+                    keyword,
+                    max_results=config.MAX_VIDEOS_PER_KEYWORD,
+                    category="tutorial_website",
+                    dimension="layanan_digital_ux",
+                    published_after=published_after,
+                    published_before=published_before,
+                )
+            except QuotaExceededError:
+                quota_exceeded = True
+                break
+            all_videos.extend(videos)
+            searched.add(keyword)
+            time.sleep(0.5)
 
     # Simpan mentah ke cache SEBELUM difilter, biar run --refilter berikutnya
     # bisa nge-tweak config.py (RELEVANCE_TERMS, EXCLUDE_TERMS, dll) tanpa
     # manggil search API lagi sama sekali (nol quota).
-    cache_path = raw_search_cache_path(year)
     with open(cache_path, "w", encoding="utf-8") as f:
         json.dump(
-            {"cached_at": datetime.now(timezone.utc).isoformat(), "videos": all_videos},
+            {
+                "cached_at": datetime.now(timezone.utc).isoformat(),
+                "searched_keywords": sorted(searched),
+                "videos": all_videos,
+            },
             f,
             ensure_ascii=False,
             indent=2,
         )
     logger.info(f"Cache mentah disimpan: {len(all_videos)} video -> {cache_path}")
+
+    if quota_exceeded:
+        logger.warning(
+            "Kuota YouTube API harian abis - run dihentikan di tengah jalan. "
+            "Keyword yang belum sempat di-search bakal otomatis lanjut di run berikutnya."
+        )
+        print(
+            "PERINGATAN: kuota YouTube API harian abis. Keyword yang udah sempat "
+            "di-search udah aman ke-cache - tinggal run lagi nanti buat lanjutin "
+            "sisanya, gak perlu ulang dari awal."
+        )
 
     return all_videos
 

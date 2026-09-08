@@ -16,17 +16,44 @@ KEYWORDS = {
         "mafia peradilan",
         "kode etik hakim agung",
         "OTT hakim agung",
+        # Nama kasus/tersangka spesifik - yield lebih tinggi daripada istilah
+        # generik karena ini kasus besar yang banyak diberitakan.
+        "Zarof Ricar",
+        "Hasbi Hasan MA",
+        "Nurhadi MA",
+        "Sudrajad Dimyati",
+        "Gazalba Saleh",
+        "vonis bebas kasasi MA",
+        "diskon hukuman MA",
+        "gratifikasi hakim agung",
+        "makelar kasus MA",
     ],
     "putusan_kontroversial": [
         "putusan Mahkamah Agung",
         "vonis MA",
         "kasasi MA",
         "peninjauan kembali MA",
+        "putusan MA pilkada",
     ],
     "layanan_digital_ux": [
         "direktori putusan MA",
         "e-court Mahkamah Agung",
         "SIPP pengadilan",
+    ],
+    # Dimensi baru: persepsi/kepercayaan publik ke MA secara institusional -
+    # fokus riset digeser dari UI/UX ke reputasi keseluruhan + kemauan publik
+    # pakai kanal resmi (lihat diskusi tim: warga jarang beneran pakai
+    # websitenya, opininya kebentuk dari framing media soal skandal/putusan).
+    "kepercayaan_publik": [
+        "kepercayaan publik Mahkamah Agung",
+        "citra Mahkamah Agung",
+        "reputasi Mahkamah Agung",
+        "gak percaya Mahkamah Agung",
+        "percuma lapor MA",
+        "transparansi Mahkamah Agung",
+        "akuntabilitas MA",
+        "kecewa putusan MA",
+        "hukum tumpul ke atas",
     ],
 }
 
@@ -45,6 +72,15 @@ WEBSITE_KEYWORDS = [
     "tutorial SIPP pengadilan",
     "cara cek jadwal sidang online",
     "cara pakai aplikasi SIPP",
+    # Sikap/kemauan pakai kanal digital resmi - sengaja diarahin ke istilah
+    # spesifik e-court/SIPP/sidang online (bukan "aplikasi pemerintah" generik)
+    # biar tetep lolos WEBSITE_RELEVANCE_TERMS, bukan nyasar ke aplikasi
+    # pemerintah lain (Pajak, Dukcapil, dst).
+    "males pake e-court",
+    "ribet aplikasi SIPP",
+    "gak percaya sistem pengadilan online",
+    "mending sidang manual daripada online",
+    "data pribadi aman gak e-court",
 ]
 
 # Term wajib buat video kategori INSTITUSIONAL (hasil dari KEYWORDS): title cuma
@@ -62,6 +98,14 @@ INSTITUTIONAL_RELEVANCE_TERMS = [
     "ma",  # ditangani lewat regex word-boundary di scraper, bukan substring literal
     "kasasi",              # proses hukum yang eksklusif ranah Mahkamah Agung
     "peninjauan kembali",  # PK - eksklusif ranah Mahkamah Agung
+    "hakim agung",  # jabatan eksklusif MA - video soal ini sering gak nyebut "MA"/"Mahkamah Agung" lagi di title
+    # Nama tersangka/kasus skandal MA - proper noun unik, gak perlu embel-embel
+    # "Mahkamah Agung"/"MA" di title buat dianggap relevan.
+    "zarof ricar",
+    "hasbi hasan",
+    "nurhadi",
+    "sudrajad dimyati",
+    "gazalba saleh",
 ]
 
 # Term wajib KHUSUS video kategori TUTORIAL_WEBSITE (hasil dari WEBSITE_KEYWORDS).
