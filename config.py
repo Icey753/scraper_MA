@@ -5,15 +5,30 @@ Edit KEYWORDS dan CHANNEL_HANDLES sesuai isu yang lagi mau di-track.
 
 # Keyword institusional - isu hukum & reputasi MA secara umum. Dibatasi ke kanal
 # berita (lihat CHANNEL_HANDLES) biar hasilnya representatif publik umum.
-KEYWORDS = [
-    "putusan Mahkamah Agung",
-    "vonis MA",
-    "kasasi MA",
-    "peninjauan kembali MA",
-    "mafia peradilan",
-    "kode etik hakim agung",
-    "direktori putusan MA",
-]
+#
+# Dikelompokkan per dimensi reputasi biar tiap video/post/comment yang ketarik
+# otomatis kebawa label "dimension"-nya - dipake buat nyusun tren reputasi per
+# tahun di analyze_reputation.py, tanpa perlu topic modeling terpisah (data
+# komentar publik terlalu noisy buat unsupervised topic modeling yang koheren).
+KEYWORDS = {
+    "integritas_korupsi": [
+        "suap Mahkamah Agung",
+        "mafia peradilan",
+        "kode etik hakim agung",
+        "OTT hakim agung",
+    ],
+    "putusan_kontroversial": [
+        "putusan Mahkamah Agung",
+        "vonis MA",
+        "kasasi MA",
+        "peninjauan kembali MA",
+    ],
+    "layanan_digital_ux": [
+        "direktori putusan MA",
+        "e-court Mahkamah Agung",
+        "SIPP pengadilan",
+    ],
+}
 
 # Keyword tutorial/how-to - buat mancing komentar yang isinya PENGALAMAN NYATA pakai
 # website/aplikasi MA. Orang jarang bikin video "review website MA", tapi banyak yang
@@ -118,8 +133,14 @@ CHANNEL_HANDLES = [
 # Subreddit yang di-search (gabung pake "+" ala PRAW multi-sub search)
 SUBREDDITS = "indonesia+hukum"
 
-# Rentang waktu (dalam hari ke belakang dari hari ini) buat filter YouTube publishedAfter
+# Rentang waktu (dalam hari ke belakang dari hari ini) buat filter YouTube publishedAfter -
+# dipake kalau youtube_scraper.py dijalanin TANPA --year (mode "scan terbaru" lama).
 DAYS_LOOKBACK = 180
+
+# Rentang tahun buat tracking tren reputasi longitudinal. Dipake sebagai referensi
+# validasi (Reddit) dan batas wajar buat --year di youtube_scraper.py.
+START_YEAR = 2020
+END_YEAR = 2026
 
 # Reddit time_filter: hour, day, week, month, year, all
 REDDIT_TIME_FILTER = "year"

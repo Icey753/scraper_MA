@@ -9,15 +9,16 @@ Pakai PRAW (API resmi Reddit).
 """
 
 import os
-import csv
 import time
 import logging
 import re
+from datetime import datetime, timezone
 
 import praw
 from dotenv import load_dotenv
 
 import config
+from csv_utils import load_existing_ids, append_rows
 
 load_dotenv()
 
@@ -96,10 +97,22 @@ def is_ma_related(text):
 # SEARCH POSTS
 # ============================================================
 
-def search_posts(keyword, max_results=50):
+def year_month_from_utc(created_utc):
+    """Ekstrak (year, month) dari epoch timestamp created_utc Reddit."""
+    dt = datetime.fromtimestamp(created_utc, tz=timezone.utc)
+    return dt.year, dt.month
+
+
+def search_posts(keyword, max_results=50, dimension=None):
     """
-    Search post berdasarkan keyword di subreddit
-    yang ditentukan di config.SUBREDDITS.
+    Search post berdasarkan keyword di subreddit yang ditentukan di
+    config.SUBREDDITS.
+
+    CATATAN keterbatasan: Reddit API gak punya date-range search resmi
+    (cloudsearch timestamp: syntax udah deprecated). sort="new" + time_filter
+    dari config cuma ngasih submission terbaru yang match, jadi tahun-tahun
+    lama (2020-2022) kemungkinan besar bakal tipis/kosong cakupannya - Reddit
+    di sini best-effort/pelengkap, YouTube tetap sumber utama buat tren tahunan.
     """
 
     posts = []
@@ -119,6 +132,8 @@ def search_posts(keyword, max_results=50):
                 + submission.selftext
             )
 
+            created_year, created_month = year_month_from_utc(submission.created_utc)
+
             posts.append(
                 {
                     "post_id": submission.id,
@@ -128,9 +143,12 @@ def search_posts(keyword, max_results=50):
                     "score": submission.score,
                     "num_comments": submission.num_comments,
                     "created_utc": submission.created_utc,
+                    "created_year": created_year,
+                    "created_month": created_month,
                     "url": submission.url,
                     "selftext": submission.selftext[:2000],
                     "keyword": keyword,
+                    "dimension": dimension,
 
                     # Apakah post-nya sendiri menyebut MA?
                     "post_ma_related": is_ma_related(post_text),
@@ -143,7 +161,7 @@ def search_posts(keyword, max_results=50):
         )
 
     logger.info(
-        f"Keyword '{keyword}': ditemukan {len(posts)} post"
+        f"Keyword '{keyword}' (dimension={dimension}): ditemukan {len(posts)} post"
     )
 
     return posts
@@ -218,6 +236,8 @@ def get_comments(
             else:
                 continue
 
+            created_year, created_month = year_month_from_utc(c.created_utc)
+
             comments.append(
                 {
                     "post_id": post_id,
@@ -226,6 +246,8 @@ def get_comments(
                     "text": comment_text,
                     "score": c.score,
                     "created_utc": c.created_utc,
+                    "created_year": created_year,
+                    "created_month": created_month,
 
                     "relevance": relevance,
                     "ma_keyword": True,
@@ -243,31 +265,62 @@ def get_comments(
 
 
 # ============================================================
+# CSV SCHEMA
+# ============================================================
+
+POST_CSV = "output/reddit_posts.csv"
+COMMENT_CSV = "output/reddit_comments.csv"
+
+POST_FIELDS = [
+    "post_id", "title", "subreddit", "author", "score", "num_comments",
+    "created_utc", "created_year", "created_month", "url", "selftext",
+    "keyword", "dimension", "post_ma_related",
+]
+COMMENT_FIELDS = [
+    "post_id", "comment_id", "author", "text", "score",
+    "created_utc", "created_year", "created_month",
+    "relevance", "ma_keyword", "post_title",
+    "keyword", "subreddit", "dimension", "post_ma_related",
+]
+
+
+def in_tracked_range(created_year):
+    return config.START_YEAR <= created_year <= config.END_YEAR
+
+
+# ============================================================
 # MAIN PIPELINE
 # ============================================================
 
 def run():
 
+    os.makedirs("output", exist_ok=True)
+
+    existing_post_ids = load_existing_ids(POST_CSV, "post_id")
+    logger.info(f"Post yang udah ada di {POST_CSV}: {len(existing_post_ids)}")
+
     all_posts = []
-    all_comments = []
 
     # --------------------------------------------------------
-    # SEARCH
+    # SEARCH (per dimensi reputasi, sama kayak youtube_scraper)
     # --------------------------------------------------------
 
-    for keyword in config.KEYWORDS:
+    for dimension, keywords in config.KEYWORDS.items():
 
-        posts = search_posts(
-            keyword,
-            max_results=config.MAX_POSTS_PER_KEYWORD,
-        )
+        for keyword in keywords:
 
-        all_posts.extend(posts)
+            posts = search_posts(
+                keyword,
+                max_results=config.MAX_POSTS_PER_KEYWORD,
+                dimension=dimension,
+            )
 
-        time.sleep(0.5)
+            all_posts.extend(posts)
+
+            time.sleep(0.5)
 
     # --------------------------------------------------------
-    # DEDUP POST
+    # DEDUP POST + FILTER RENTANG TAHUN
     # --------------------------------------------------------
 
     seen = set()
@@ -275,20 +328,30 @@ def run():
 
     for p in all_posts:
 
-        if p["post_id"] not in seen:
+        if p["post_id"] in seen:
+            continue
+        if not in_tracked_range(p["created_year"]):
+            continue
 
-            seen.add(p["post_id"])
-            unique_posts.append(p)
+        seen.add(p["post_id"])
+        unique_posts.append(p)
+
+    # Post yang belum pernah discrap di run sebelumnya
+    new_posts = [p for p in unique_posts if p["post_id"] not in existing_post_ids]
+    skipped = len(unique_posts) - len(new_posts)
 
     logger.info(
-        f"Total post unik: {len(unique_posts)}"
+        f"Total post unik dalam rentang {config.START_YEAR}-{config.END_YEAR}: "
+        f"{len(unique_posts)}, {skipped} udah pernah discrap (skip), {len(new_posts)} baru"
     )
 
     # --------------------------------------------------------
-    # GET COMMENTS
+    # GET COMMENTS (cuma buat post baru)
     # --------------------------------------------------------
 
-    for p in unique_posts:
+    all_comments = []
+
+    for p in new_posts:
 
         comments = get_comments(
             post_id=p["post_id"],
@@ -301,55 +364,19 @@ def run():
 
             c["keyword"] = p["keyword"]
             c["subreddit"] = p["subreddit"]
+            c["dimension"] = p["dimension"]
             c["post_ma_related"] = p["post_ma_related"]
+
+        comments = [c for c in comments if in_tracked_range(c["created_year"])]
 
         all_comments.extend(comments)
 
+        # Tulis langsung per-post (append), sama pola kayak youtube_scraper -
+        # data gak ilang kalau script keputus di tengah jalan.
+        append_rows(POST_CSV, [p], POST_FIELDS)
+        append_rows(COMMENT_CSV, comments, COMMENT_FIELDS)
+
         time.sleep(0.3)
-
-    # --------------------------------------------------------
-    # SAVE POSTS
-    # --------------------------------------------------------
-
-    os.makedirs("output", exist_ok=True)
-
-    if unique_posts:
-
-        with open(
-            "output/reddit_posts.csv",
-            "w",
-            newline="",
-            encoding="utf-8",
-        ) as f:
-
-            writer = csv.DictWriter(
-                f,
-                fieldnames=unique_posts[0].keys(),
-            )
-
-            writer.writeheader()
-            writer.writerows(unique_posts)
-
-    # --------------------------------------------------------
-    # SAVE COMMENTS
-    # --------------------------------------------------------
-
-    if all_comments:
-
-        with open(
-            "output/reddit_comments.csv",
-            "w",
-            newline="",
-            encoding="utf-8",
-        ) as f:
-
-            writer = csv.DictWriter(
-                f,
-                fieldnames=all_comments[0].keys(),
-            )
-
-            writer.writeheader()
-            writer.writerows(all_comments)
 
     # --------------------------------------------------------
     # LOG
@@ -369,16 +396,17 @@ def run():
 
     logger.info(
         f"Selesai. "
-        f"{len(unique_posts)} post, "
-        f"{len(all_comments)} komentar relevan. "
+        f"{len(new_posts)} post baru, "
+        f"{len(all_comments)} komentar relevan baru. "
         f"Direct={direct}, Contextual={contextual}"
     )
 
     print(
         f"Done: "
-        f"{len(unique_posts)} post, "
-        f"{len(all_comments)} komentar relevan "
-        f"(direct={direct}, contextual={contextual})"
+        f"{len(new_posts)} post baru ({skipped} lama di-skip), "
+        f"{len(all_comments)} komentar relevan baru "
+        f"(direct={direct}, contextual={contextual}) "
+        f"-> {POST_CSV} / {COMMENT_CSV}"
     )
 
 
