@@ -129,3 +129,6 @@ MAX_VIDEOS_PER_KEYWORD = 15
 
 # Batas jumlah post per keyword per subreddit (Reddit search)
 MAX_POSTS_PER_KEYWORD = 50
+
+# Batas jumlah komentar yang ditarik per post Reddit
+MAX_COMMENTS_PER_POST = 200
