@@ -1,0 +1,33 @@
+// eslint-disable-next-line func-names
+(function ($, window, document) {
+  const TOGGLE_ELEMENT = '[data-promoted-articles-accordion-toggle]';
+
+  const PromotedArticlesAccordion = {
+    init() {
+      this.cacheElements();
+      this.bindEvents();
+    },
+    cacheElements() {
+      this.$button = $(TOGGLE_ELEMENT);
+    },
+    bindEvents() {
+      $(document).on('click', TOGGLE_ELEMENT, this.handleClick);
+    },
+    handleClick(e) {
+      e.preventDefault();
+
+      const $title = $(e.target);
+      const isExpanded = $title.attr('aria-expanded') === 'true';
+      $title.toggleClass('promoted-articles-accordion__link--active');
+      $title
+        .attr('aria-expanded', !isExpanded)
+        .parents('[data-promoted-articles-accordion]')
+        .find('[data-promoted-articles-accordion-content]')
+        .slideToggle();
+    },
+  };
+
+  $(() => {
+    PromotedArticlesAccordion.init();
+  });
+}(jQuery, window, document));

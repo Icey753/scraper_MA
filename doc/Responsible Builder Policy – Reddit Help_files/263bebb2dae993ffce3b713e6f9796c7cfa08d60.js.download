@@ -1,0 +1,47 @@
+// eslint-disable-next-line func-names
+(function ($, window, document) {
+  const SearchResultsFilters = {
+    init() {
+      this.cacheElements();
+      this.bindEvents();
+    },
+    cacheElements() {
+      this.$subfilters = $('[data-search-subfilters]');
+      this.$showMoreButton = this.$subfilters.find(
+        '[data-search-filter-show-more]',
+      );
+    },
+    bindEvents() {
+      $(document).on(
+        'click',
+        '[data-search-filter-toggle]',
+        this.handleToggleFilter.bind(this),
+      );
+      $(document).on(
+        'click',
+        this.$showMoreButton,
+        this.handleShowMore.bind(this),
+      );
+    },
+    handleToggleFilter(e) {
+      const $filterToggle = $(e.target);
+      const $list = $filterToggle
+        .parents('[data-search-filter]')
+        .find('[data-search-filter-list]');
+      const $tagList = $filterToggle
+        .parents('[data-search-filter]')
+        .find('[data-search-filter-list-tag]');
+      // eslint-disable-next-line no-undef
+      $filterToggle.toggleClass(LotusConfig.css.activeClass);
+      $tagList.toggleClass(LotusConfig.css.activeClass);
+      $list.toggleClass('lt-d-none');
+    },
+    handleShowMore() {
+      this.$subfilters.addClass('lt-search-result__subfilters--all');
+    },
+  };
+
+  $(() => {
+    SearchResultsFilters.init();
+  });
+}(jQuery, window, document));

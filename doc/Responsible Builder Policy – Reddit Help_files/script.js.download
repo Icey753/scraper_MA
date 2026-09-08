@@ -1,0 +1,3587 @@
+const HC_SETTINGS = {
+  css: {
+    activeClass: 'is-active',
+    hiddenClass: 'is-hidden',
+  },
+};
+
+
+
+$(() => {
+  // Category tree
+  $('[data-tree]').each((i, element) => {
+    const $item = $(element);
+    const $link = $item.find('[data-tree-link]');
+    const $box = $item.find('[data-tree-box]');
+
+    $link.on('click', (e) => {
+      e.preventDefault();
+      $link.add($item).add($box).toggleClass(HC_SETTINGS.css.activeClass);
+      $box.slideToggle(300);
+    });
+  });
+});
+
+function initializeArticleFeedback() {
+  const minimizeButton = document.getElementById('minimizeButton');
+  const helpfulText = document.querySelector('.lt-article-vote__question');
+  const feedbackContainer = document.querySelector('.lt-article-vote-feedback-container');
+  const article = document.querySelector('.lt-block.lt-p-4.lt-p-lg-6.lt-article__box'); 
+  const closeButton = document.querySelector('.minimize-button button'); 
+
+   if (!minimizeButton || !helpfulText || !feedbackContainer || !article || !closeButton) {
+    return;
+  }
+
+  let isMinimized = false; 
+  let isClosed = false; 
+  
+  const HIDE_THRESHOLD = 200; 
+
+  // Minimize button
+  minimizeButton.addEventListener('click', function () {
+    if (feedbackContainer.classList.contains('is-active')) {
+      feedbackContainer.classList.remove('is-active'); 
+    }
+    feedbackContainer.style.bottom = '-640px';
+    isMinimized = true; 
+  });
+
+  helpfulText.addEventListener('click', function () {
+    if (isClosed) return; 
+    feedbackContainer.classList.toggle('is-active');
+    if (isMinimized) {
+      feedbackContainer.style.bottom = '-40px';
+      isMinimized = false;
+    }
+  });
+
+  // Close (X) button
+  closeButton.addEventListener('click', function () {
+    feedbackContainer.classList.remove('is-active'); 
+    feedbackContainer.style.display = 'none';
+    isClosed = true;
+  });
+
+  // Scroll behavior
+  window.addEventListener('scroll', function () {
+    if (isClosed) return;
+
+    const scrollPosition = window.scrollY + window.innerHeight;
+    const articleEnd = article.offsetTop + article.offsetHeight;
+    const documentHeight = document.body.scrollHeight;           
+    const distanceFromBottom = documentHeight - scrollPosition;
+    
+    if (window.scrollY === 0) {
+      feedbackContainer.style.bottom = '-640px';
+      feedbackContainer.classList.remove('is-active');
+      isMinimized = true;
+    }
+
+    else if (distanceFromBottom <= 500) {
+      feedbackContainer.style.bottom = '-640px';
+      feedbackContainer.classList.remove('is-active');
+      isMinimized = true;
+    }
+
+    else if (scrollPosition >= articleEnd) {
+      feedbackContainer.classList.add('is-active');
+      feedbackContainer.style.bottom = '-40px';
+      isMinimized = false; 
+    }
+
+    else if (scrollPosition < article.offsetTop) {
+      feedbackContainer.style.bottom = '-640px';
+      feedbackContainer.classList.remove('is-active');
+      isMinimized = true;
+    }
+
+ else if (scrollPosition < (articleEnd - HIDE_THRESHOLD)) {
+      feedbackContainer.style.bottom = '-640px';
+      feedbackContainer.classList.remove('is-active');
+      isMinimized = true;
+    }
+    
+    else if (scrollPosition < article.offsetTop) {
+      feedbackContainer.style.bottom = '-640px';
+      feedbackContainer.classList.remove('is-active');
+      isMinimized = true;
+    }
+  });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeArticleFeedback);
+} else {
+  initializeArticleFeedback();
+}
+
+/* document.addEventListener('DOMContentLoaded', function() {
+  var minimizeButton = document.getElementById('minimizeButton');
+  var helpfulText = document.querySelector('.lt-article-vote__question');
+  var feedbackContainer = document.querySelector('.lt-article-vote-feedback-container');
+  var isMinimized = false; -->  
+
+minimizeButton.addEventListener('click', function() {
+  if (feedbackContainer.classList.contains('is-active')) {
+    feedbackContainer.classList.remove('is-active'); // Close the pop-up
+  }
+  feedbackContainer.style.bottom = '-640px'; // Minimize completely
+  isMinimized = true; // Update the flag
+});
+
+
+  helpfulText.addEventListener('click', function() {
+    feedbackContainer.classList.toggle('is-active');
+    if (isMinimized) {
+      feedbackContainer.style.bottom = '-40px'; // Adjust this value as needed
+      isMinimized = false; // Update the flag
+    }
+  });
+
+  // Event listener for the "x" button to close the pop-up
+  var closeButton = document.querySelector('.minimize-button button');
+  closeButton.addEventListener('click', function() {
+    feedbackContainer.classList.remove('is-active'); // Close the pop-up
+    isMinimized = false; // Reset the flag
+  });
+
+  window.addEventListener('scroll', function() {
+    var scrollPosition = window.scrollY;
+    var windowHeight = window.innerHeight;
+    var documentHeight = document.body.scrollHeight;
+    var distanceFromBottom = documentHeight - (scrollPosition + windowHeight);
+
+    // If the container is minimized, check if the page is scrolled up to reappear
+    if (isMinimized && scrollPosition < 20) {
+      feedbackContainer.style.bottom = '-40px'; // Adjust this value as needed
+      isMinimized = false; // Update the flag
+    }
+
+    // Toggle the 'is-active' class based on scroll position, but only if not minimized
+    if (!isMinimized) {
+      if (scrollPosition > 70 && distanceFromBottom > 20) {
+        feedbackContainer.classList.add('is-active');
+      } else {
+        feedbackContainer.classList.remove('is-active');
+      }
+    }
+  });
+}); */
+
+
+
+ // Contact Options Disclaimers
+
+$(document).ready(function() {
+  if (!document.querySelector('.lt-new-request-page')) {
+	return;
+}
+	forgot_username = '<p id="disclaimer"><br>' + document.getElementById('forgot_username').innerHTML + '</p>';
+  deactivation = '<p id="disclaimer"><br>' + document.getElementById('deactivation').innerHTML + '</p>';
+  change_username= '<p id="disclaimer"><br>' + document.getElementById('change_username').innerHTML + '</p>';
+  reset_password= '<p id="disclaimer"><br>' + document.getElementById('reset_password').innerHTML + '</p>';
+  cancel_premium= '<p id="disclaimer"><br>' + document.getElementById('cancel_premium').innerHTML + '</p>';
+  remove_2fa= '<p id="disclaimer"><br>' + document.getElementById('remove_2fa').innerHTML + '</p>';
+  forgot_email= '<p id="disclaimer"><br>' + document.getElementById('forgot_email').innerHTML + '</p>';
+  where_is_my_post= '<p id="disclaimer"><br>' + document.getElementById('where_is_my_post').innerHTML + '</p>';
+  collectible_avatars_general= '<p id="disclaimer"><br>' + document.getElementById('collectible_avatars_general').innerHTML + '</p>';
+  vault_edu= '<p id="disclaimer"><br>' + document.getElementById('vault_edu').innerHTML + '</p>';
+  unlink_vault= '<p id="disclaimer"><br>' + document.getElementById('unlink_vault').innerHTML + '</p>';
+    <!-- creators_creating_submitting= '<p id="disclaimer"><br>' + document.getElementById('creators_creating_submitting').innerHTML + '</p>';-->
+    <!-- creators_general_question= '<p id="disclaimer"><br>' + document.getElementById('creators_general_question').innerHTML + '</p>'; -->
+  creators_payouts= '<p id="disclaimer"><br>' + document.getElementById('creators_payouts').innerHTML + '</p>';
+    <!-- creators_submission_check_in= '<p id="disclaimer"><br>' + document.getElementById('creators_submission_check_in').innerHTML + '</p>';-->
+  password_reset_not_working= '<p id="disclaimer"><br>' + document.getElementById('password_reset_not_working').innerHTML + '</p>';
+  ca_yes= '<p id="disclaimer"><br>' + document.getElementById('ca_yes').innerHTML + '</p>';
+  contributor_payout_issues= '<p id="disclaimer"><br>' + document.getElementById('contributor_payout_issues').innerHTML + '</p>';
+  contributor_general_question= '<p id="disclaimer"><br>' + document.getElementById('contributor_general_question').innerHTML + '</p>';
+  contributor_eligibility= '<p id="disclaimer"><br>' + document.getElementById('contributor_eligibility').innerHTML + '</p>';
+  helper_rewards_trophies= '<p id="disclaimer"><br>' + document.getElementById('helper_rewards_trophies').innerHTML + '</p>';
+  helper_rewards_tiers= '<p id="disclaimer"><br>' + document.getElementById('helper_rewards_tiers').innerHTML + '</p>';
+  not_my_username= '<p id="disclaimer"><br>' + document.getElementById('not_my_username').innerHTML + '</p>';
+  misused_email= '<p id="disclaimer"><br>' + document.getElementById('misused_email').innerHTML + '</p>';
+  hacked_account= '<p id="disclaimer"><br>' + document.getElementById('hacked_account').innerHTML + '</p>';
+  eu_illegal_note= '<p id="disclaimer"><br>' + document.getElementById('eu_illegal_note').innerHTML + '</p>';
+  tm_des_hint= '<p id="disclaimer"><br>' + document.getElementById('tm_des_hint').innerHTML + '</p>';
+  terms_inq_hint= '<p id="disclaimer"><br>' + document.getElementById('terms_inq_hint').innerHTML + '</p>';
+  dsa_report_disc= '<p id="disclaimer"><br>' + document.getElementById('dsa_report_disc').innerHTML + '</p>';
+  report_bug= '<p id="disclaimer"><br>' + document.getElementById('report_bug').innerHTML + '</p>';
+  dmca_anon_hint= '<p id="disclaimer2"><br>' + document.getElementById('dmca_anon_hint').innerHTML + '</p>';
+  awards= '<p id="disclaimer"><br>' + document.getElementById('awards').innerHTML + '</p>';
+  gold= '<p id="disclaimer"><br>' + document.getElementById('gold').innerHTML + '</p>';
+  rr_mod_removed_from_community= '<p id="disclaimer"><br>' + document.getElementById('rr_mod_removed_from_community').innerHTML + '</p>';
+  rr_request_not_reviewed= '<p id="disclaimer"><br>' + document.getElementById('rr_request_not_reviewed').innerHTML + '</p>';
+  rr_bot_removed_my_post= '<p id="disclaimer"><br>' + document.getElementById('rr_bot_removed_my_post').innerHTML + '</p>';
+  rr_denied= '<p id="disclaimer"><br>' + document.getElementById('rr_denied').innerHTML + '</p>';
+  rr_mod_concern_with_request= '<p id="disclaimer"><br>' + document.getElementById('rr_mod_concern_with_request').innerHTML + '</p>';
+  rr_tmr= '<p id="disclaimer"><br>' + document.getElementById('rr_tmr').innerHTML + '</p>';
+  cf_cd= '<div id="cf_cd2">'+ document.getElementById('cf_cd').innerHTML + '</div>';
+	cf_charity = '<div id="cf_charity">'+ document.getElementById('cf_charity').innerHTML + '</div>';
+  descript_base = document.getElementById('descript_base').innerHTML
+	project_details_descript = '<p id="project_details_descript">' + document.getElementById('project_details_descript').innerHTML + '</p>';
+  project_details = document.getElementById('project_details').innerHTML
+  project_summary = '<div id="project_summary">'+ document.getElementById('project_summary').innerHTML + '</div>';
+  cf_ug_dis = '<p id="cf_ug_dis">' + document.getElementById('cf_ug_dis').innerHTML + '</p>';
+  cf_rules = document.getElementById('cf_rules').innerHTML;
+  cc_descript = document.getElementById('cc_descript').innerHTML;
+  modcall = document.getElementById('modcall').innerHTML;
+  osa_no_disc= '<p id="osa_no_disc"><br>' + document.getElementById('osa_no_disc').innerHTML + '</p>';
+  osa_disc= '<div id="osa_disc2">' + document.getElementById('osa_disc').innerHTML + '</div>';
+  osa_type_note= '<p id="osa_type_note"><br>' + document.getElementById('osa_type_note').innerHTML + '</p>';
+  cf_contact= '<div id="cf_contact">' + document.getElementById('cf_contact').innerHTML + '</div>'; 
+  cf_project= '<div id="cf_project">' + document.getElementById('cf_project').innerHTML + '</div>';
+  cf_project2= '<div id="cf_project2">' + document.getElementById('cf_project').innerHTML + '</div>';
+  cf_regerror = '<p id="cf_regerror" class="notification notification-error notification-inline">' + document.getElementById('cf_regerror').innerHTML + '</p>';
+  emailnote = '<p id="emailnote" style="font-weight:normal">' + document.getElementById('cf_closer').innerHTML + '</p>';
+  read_articles_privacy = '<p id="read_articles_privacy" style="font-weight:normal">' + document.getElementById('read_articles').innerHTML + '</p>';
+  cf_india_other = '<div id="cf_india_other">' + document.getElementById('cf_india_other').innerHTML + '</div>';
+  osa_restricted_1 = '<div id="osa_restricted_1">' + document.getElementById('osa_restricted_1').innerHTML + '</div>';
+  osa_restricted_2 = '<div id="osa_restricted_2">' + document.getElementById('osa_restricted_2').innerHTML + '</div>';
+  //moderator_code_of_conduct = '<div id="moderator_code_of_conduct"><br>' + document.getElementById('moderator_code_of_conduct').innerHTML + '</div>';
+  copyright_url_second_hint = '<div id="copyright_url_second_hint">' + document.getElementById('copyright_url_second_hint').innerHTML + '</div>';
+  copyright_abuse = '<div id="copyright_abuse">' + document.getElementById('copyright_abuse').innerHTML + '</div>';
+  take_down_hint_2 = '<p id="take_down_hint_2">' + document.getElementById('tid_hint2').innerHTML + '</p>';
+	take_down_hint_3 = '<p id="take_down_hint_3">' + document.getElementById('tid_hint3').innerHTML + '</p>';
+  eca_hint = '<p id="eca_hint">' + document.getElementById('eca_hint1').innerHTML + '</p>';
+  eca_terms_hint = '<div id="eca_terms_hint">' + document.getElementById('eca_term_hinta').innerHTML + '</div>';
+  dev_program_disclaimer = '<div id="dev_program_disclaimer">' + document.getElementById ('dev_program_disclaimer').innerHTML + '</div>';
+  locked_account_disclaimer = '<div id="locked_account_disclaimer">' + document.getElementById ('locked_account_disclaimer').innerHTML + '</div>';
+  appeals_disclaimer = '<div id="appeals_disclaimer">' + document.getElementById ('appeals_disclaimer').innerHTML + '</div>';
+  ads_api_id_account = '<p id="ads_api_id_account">' + document.getElementById('ads_api_account_id').innerHTML + '</p>';
+  ads_api_id_dev = '<p id="ads_api_id_dev">' + document.getElementById('ads_api_dev_id').innerHTML + '</p>';
+  ads_api_hint_desc = '<p id="ads_api_hint_desc">' + document.getElementById('ads_api_desc_hint').innerHTML + '</p>';
+  ads_api_sub= '<div id="ads_api_sub">' + document.getElementById('ads_api_sub1').innerHTML + '</div>';
+  ads_api_desc= '<div id="ads_api_desc">' + document.getElementById('ads_api_desc1').innerHTML + '</div>';
+  sg_report_details_helperv = '<p id="sg_report_details_helper1" class="help-block">' + document.getElementById('sg_report_details_helper').innerHTML + '</p>';
+});
+
+// Hide the Account incorrectly labeled as APP from dropdown unless user has direct link
+
+$(document).ready(function() {
+  var urlParams = new URLSearchParams(window.location.search);
+
+  if (urlParams.get('tf_24251393') !== 'labeled_as_app') {
+
+    $('#request_custom_fields_24251393 option[value="labeled_as_app"]').remove();
+
+    var observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.addedNodes.length) {
+
+          $('.nesty-panel li').each(function() {
+            if ($(this).text().trim() === 'Account incorrectly labeled as APP') {
+              $(this).remove();
+            }
+          });
+        }
+      });
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+});
+
+//Run when new selection is made
+$("#request_custom_fields_24251393").on("change paste keyup", function() {
+
+var selected = $('#request_custom_fields_24251393').val();
+if (selected == "deactivation") {
+  if ($('#disclaimer')){
+    $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_24251393').append(deactivation);
+
+}  
+  
+else if (selected == "changing_recycling_usernames") {
+ if ($('#disclaimer')){
+   $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_24251393').append(change_username);
+}  
+
+else if (selected == "forgot_username") {
+if ($('#disclaimer')){
+   $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_24251393').append(forgot_username);
+}  
+  
+  else if (selected == "password_reset_not_working") {
+if ($('#disclaimer')){
+   $('#disclaimer').remove();
+}
+$('div.request_custom_fields_24251393').append(password_reset_not_working);
+}
+  
+else if (selected == "reset_password") {
+if ($('#disclaimer')){
+   $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_24251393').append(reset_password);
+} 
+  
+else if (selected == "remove_2fa_autoresponse") {
+if ($('#disclaimer')){
+   $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_24251393').append(remove_2fa);
+} 
+  
+else if (selected == "forgot_email") {
+if ($('#disclaimer')){
+   $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_24251393').append(forgot_email);
+}   
+
+else if (selected == "where_is_my_post") {
+if ($('#disclaimer')){
+   $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_24251393').append(where_is_my_post);
+}
+
+else if (selected == "not_my_username") {
+if ($('#disclaimer')){
+   $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_24251393').append(not_my_username);
+}
+  
+else if (selected == "misused_email") {
+if ($('#disclaimer')){
+   $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_24251393').append(misused_email);
+}   
+
+else if (selected == "hacked_account") {
+if ($('#disclaimer')){
+   $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_24251393').append(hacked_account);
+}  
+  
+else if (selected == "fpr_old_email") {
+if ($('#disclaimer')){
+    $('#disclaimer').remove();
+}    
+var lockedAccountText = $('#locked_account_disclaimer').html();
+  $('div.request_custom_fields_24251393').append('<div id="disclaimer" class="help-block">' + lockedAccountText + '</div>');
+}
+  
+else if (selected == "suspension_notice") {
+  if ($('#disclaimer')){
+    $('#disclaimer').remove();
+  }    
+var appealsText = $('#appeals_disclaimer').html();
+  $('div.request_custom_fields_24251393').append('<div id="disclaimer" class="help-block">' + appealsText + '</div>');
+}
+  
+else{
+// Check if disclaimer is active and remove disclaimer
+if ($('#disclaimer')){
+    $('#disclaimer').remove();
+}
+}
+});
+
+setTimeout(function() {
+  $("#request_custom_fields_24251393").trigger('change');
+}, 500);
+
+
+//Run when new selection is made
+$("#request_custom_fields_360016149671").on("change paste keyup", function() {
+var selected = $('#request_custom_fields_360016149671').val();
+if (selected == "cancel_premium") {
+  if ($('#disclaimer')){
+    $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_360016149671').append(cancel_premium);
+} 
+  
+else if (selected == "collectible_avatars_general") {
+if ($('#disclaimer')){
+   $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_360016149671').append(collectible_avatars_general);
+}   
+
+else if (selected == "vault_edu") {
+if ($('#disclaimer')){
+   $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_360016149671').append(vault_edu);
+}   
+  
+else if (selected == "unlink_vault") {
+if ($('#disclaimer')){
+   $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_360016149671').append(unlink_vault);
+}  
+
+else if (selected == "awards") {
+if ($('#disclaimer')){
+   $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_360016149671').append(awards);
+}
+  
+else if (selected == "gold") {
+if ($('#disclaimer')){
+   $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_360016149671').append(gold);
+} 
+  
+  
+else{
+// Check if disclaimer is active and remove disclaimer
+if ($('#disclaimer')){
+    $('#disclaimer').remove();
+}
+}
+}); 
+
+//Run when new selection is made
+$("#request_custom_fields_11428119630868").on("change paste keyup", function() {
+var selected = $('#request_custom_fields_11428119630868').val();
+ --> if (selected == "creators_creating_submitting") {
+  --> if ($('#disclaimer')){
+  -->   $('#disclaimer').remove();
+ --> }    
+ --> $('div.request_custom_fields_11428119630868').append(creators_creating_submitting);
+ --> } 
+  
+ --> else if (selected == "creators_general_question") {
+ --> if ($('#disclaimer')){
+ -->   $('#disclaimer').remove();
+ --> }    
+ --> $('div.request_custom_fields_11428119630868').append(creators_general_question);
+ --> }     
+
+--> else 
+  if (selected == "creators_payouts") {
+if ($('#disclaimer')){
+   $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_11428119630868').append(creators_payouts);
+}    
+  
+--> else if (selected == "creators_submission_check_in") {
+--> if ($('#disclaimer')){
+ -->  $('#disclaimer').remove();
+ --> }    
+--> $('div.request_custom_fields_11428119630868').append(creators_submission_check_in);
+--> }    
+  
+else{
+// Check if disclaimer is active and remove disclaimer
+if ($('#disclaimer')){
+    $('#disclaimer').remove();
+}
+}
+}); 
+
+//Run when new selection is made
+$("#request_custom_fields_17693076841108").on("change paste keyup", function() {
+  
+var selected = $('#request_custom_fields_17693076841108').val();
+if (selected == "ca_yes") {
+  if ($('#disclaimer')){
+    $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_17693076841108').append(ca_yes);
+} 
+else{
+// Check if disclaimer is active and remove disclaimer
+if ($('#disclaimer')){
+    $('#disclaimer').remove();
+}
+}
+}); 
+
+
+
+
+//Run when new selection is made
+$("#request_custom_fields_19149610437524").on("change paste keyup", function() {
+  
+var selected = $('#request_custom_fields_19149610437524').val();
+if (selected == "contributor_payout_issues") {
+  if ($('#disclaimer')){
+    $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_19149610437524').append(contributor_payout_issues);
+} 
+  
+else if (selected == "contributor_general_question") {
+if ($('#disclaimer')){
+   $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_19149610437524').append(contributor_general_question);
+} 
+
+else if (selected == "contributor_eligibility") {
+if ($('#disclaimer')){
+   $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_19149610437524').append(contributor_eligibility);
+} 
+  
+  
+else{
+// Check if disclaimer is active and remove disclaimer
+if ($('#disclaimer')){
+    $('#disclaimer').remove();
+}
+}
+}); 
+
+
+
+//Run when new selection is made
+$("#request_custom_fields_19149696734484").on("change paste keyup", function() {
+  
+var selected = $('#request_custom_fields_19149696734484').val();
+if (selected == "helper_rewards_trophies") {
+  if ($('#disclaimer')){
+    $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_19149696734484').append(helper_rewards_trophies);
+} 
+  
+else if (selected == "helper_rewards_tiers") {
+if ($('#disclaimer')){
+   $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_19149696734484').append(helper_rewards_tiers);
+} 
+
+else{
+// Check if disclaimer is active and remove disclaimer
+if ($('#disclaimer')){
+    $('#disclaimer').remove();
+}
+}
+}); 
+
+//EU Illegal IP Reports - Add disclaimer
+$("#request_custom_fields_19616701243284").on("change paste keyup", function() {
+  
+var selected = $('#request_custom_fields_19616701243284').val();
+if (selected == "dsa_counterfeit_goods") {
+  if ($('#disclaimer')){
+    $('#disclaimer').remove();
+}    
+$('div.form-field.request_description').append(dsa_report_disc);
+$('div.request_custom_fields_24377696').hide();
+} 
+  
+else if (selected == "dsa_copyright_infringement") {
+if ($('#disclaimer')){
+   $('#disclaimer').remove();
+}    
+$('div.form-field.request_description').append(dsa_report_disc);
+} 
+  
+else if (selected == "dsa_trademark_infringement") {
+if ($('#disclaimer')){
+   $('#disclaimer').remove();
+}    
+$('div.form-field.request_description').append(dsa_report_disc);
+  $('div.request_custom_fields_24377696').hide();
+} 
+
+else{
+// Check if disclaimer is active and remove disclaimer
+if ($('#disclaimer')){
+    $('#disclaimer').remove();
+}
+}
+}); 
+
+
+//Run when new selection is made
+$("#request_custom_fields_15968861076756").on("change paste keyup", function() {
+  
+var selected = $('#request_custom_fields_15968861076756').val();
+if (selected == "report_bug") {
+  if ($('#disclaimer')){
+    $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_15968861076756').append(report_bug);
+} 
+else{
+// Check if disclaimer is active and remove disclaimer
+if ($('#disclaimer')){
+    $('#disclaimer').remove();
+}
+}
+}); 
+
+
+//REDDIT REQUEST DISCLAIMER
+$("#request_custom_fields_29166873681428").on("change paste keyup", function() {
+  
+var selected = $('#request_custom_fields_29166873681428').val();
+if (selected == "rr_mod_removed_from_community") {
+  if ($('#disclaimer')){
+    $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_29166873681428').append(rr_mod_removed_from_community);
+} 
+  
+else if (selected == "rr_request_not_reviewed") {
+if ($('#disclaimer')){
+   $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_29166873681428').append(rr_request_not_reviewed);
+} 
+
+else if (selected == "rr_bot_removed_my_post") {
+if ($('#disclaimer')){
+   $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_29166873681428').append(rr_bot_removed_my_post);
+} 
+
+else if (selected == "rr_denied") {
+if ($('#disclaimer')){
+   $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_29166873681428').append(rr_denied);
+} 
+  
+else if (selected == "rr_mod_concern_with_request") {
+if ($('#disclaimer')){
+   $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_29166873681428').append(rr_mod_concern_with_request);
+}   
+
+else if (selected == "rr_tmr") {
+if ($('#disclaimer')){
+   $('#disclaimer').remove();
+}    
+$('div.request_custom_fields_29166873681428').append(rr_tmr);
+}     
+  
+else{
+// Check if disclaimer is active and remove disclaimer
+if ($('#disclaimer')){
+    $('#disclaimer').remove();
+}
+}
+}); 
+
+
+
+//Legal Emergency Disclosure Form
+
+ var i = 0;
+ var checkExist = setInterval(function() {
+  i++;
+    if ($("a.nesty-input").length){
+      clearInterval(checkExist);
+      
+      $("a.nesty-input").each(function() {
+        $(this).bind( "click", function() {
+ 					
+          // Hide form 360001384392 from everyone
+          $("#360001384392").remove();
+          // Hide form 8980346507924 from everyone
+					$("#8980346507924").remove();
+          // Hide form 11402243263252 from everyone
+          $("#11402243263252").remove();
+          
+           // Hide form 16982666748180 from everyone
+          $("#16982666748180").remove();
+            // Hide form 55345 from everyone
+          $("#55345").remove();
+            // Hide form 360001244951 from everyone
+          $("#360001244951").remove();
+            // Hide form 179106 from everyone
+          $("#179106").remove();
+            // Hide form 73465 from everyone
+          $("#73465").remove();
+           // Hide form 360000167252 from everyone
+          $("#360000167252").remove();
+           // Hide form 360000644872 from everyone
+          $("#360000644872").remove();
+           // Hide form 360000478391 from everyone
+          $("#360000478391").remove();
+           // Hide form 360000083203 from everyone
+          $("#360000083203").remove();
+              // Hide form 360000019326 from everyone
+          $("#360000019326").remove();
+           // Hide form 106573 from everyone
+          $("#106573").remove();
+          // Hide form 19625658590612 from everyone
+          $("#19625658590612").remove();
+          // Hide form 19626896375572 from everyone
+          $("#19626896375572").remove();
+           // Hide form 21309030504724 from everyone
+          $("#21309030504724").remove();
+           // Hide form 21309112061076 from everyone
+          $("#21309112061076").remove();
+      		// Hide form 20794104097300 from everyone
+          $("#20794104097300").remove();
+          // Hide form 21879292693140 from everyone
+          $("#21879292693140").remove();
+           // Hide form 22936680744980 from everyone
+          $("#22936680744980").remove();
+           // Hide form 22969554005396 from everyone
+          $("#22969554005396").remove();
+          // Hide form 360000152352 from everyone
+          $("#360000152352").remove();
+          // Hide form 23665100389524 from everyone
+          $("#23665100389524").remove();
+            // Hide form 23932680126484 from everyone
+          $("#23932680126484").remove();
+         // Hide form 29163344078100 from everyone
+          $("#29163344078100").remove();
+        // Hide form 29770197409428 from everyone
+          $("#29770197409428").remove();
+				// Hide form 32959838978452 from everyone
+          $("#32959838978452").remove();
+          // Hide form 32959838978452 from everyone
+          $("#35634548247700").remove();
+          // Hide form 37986178602260 from everyone
+          $("#37986178602260").remove();
+          $("#42140376329620").remove();
+          $("#46148295367060").remove();
+					$("#19623931614484").remove();
+          $("#50388520825236").remove();
+        });
+      });
+    }
+    if (i > 10){
+        clearInterval(checkExist);
+    }
+  }, 100);  
+
+//Media in Comments Form
+
+ var i = 0;
+ var checkExist = setInterval(function() {
+  i++;
+    if ($("a.nesty-input").length){
+      clearInterval(checkExist);
+      $("a.nesty-input").each(function() {
+        $(this).bind( "click", function() {
+ 
+          // Hide form 8980346507924 from everyone
+          $("#8980346507924").remove();
+
+        });
+      });
+    }
+    if (i > 10){
+        clearInterval(checkExist);
+    }
+  }, 100);  
+
+//Creators Form
+
+ var i = 0;
+ var checkExist = setInterval(function() {
+  i++;
+    if ($("a.nesty-input").length){
+      clearInterval(checkExist);
+      $("a.nesty-input").each(function() {
+        $(this).bind( "click", function() {
+ 
+          // Hide form 11402243263252 from everyone
+          $("#11402243263252").remove();
+
+        });
+      });
+    }
+    if (i > 10){
+        clearInterval(checkExist);
+    }
+  }, 100);  
+
+
+//Accessibility Form
+
+ var i = 0;
+ var checkExist = setInterval(function() {
+  i++;
+    if ($("a.nesty-input").length){
+      clearInterval(checkExist);
+      $("a.nesty-input").each(function() {
+        $(this).bind( "click", function() {
+ 
+          // Hide form 16982666748180 from everyone
+          $("#16982666748180").remove();
+
+        });
+      });
+    }
+    if (i > 10){
+        clearInterval(checkExist);
+    }
+  }, 100);  
+
+//Ticket Form Redirects
+
+var oldIds = ["360001244951", "179106", "360000167252", "360000644872", "360000478391", "360000083203", "73465", "360000019326", "106573", "11402243263252","360000152352", "65076"];
+  var newIds = ["15968767746196", "19300233728916", "15968767746196", "15968767746196", "15968767746196", "15968767746196", "16510899084308", "16510899084308", "16510899084308", "19148839169812", "19623931614484","23708886396180"];
+
+
+if (window.location.href.indexOf("requests/new?ticket_form_id=") > -1) {
+  for (var i = 0; i < oldIds.length; i++){
+    if (window.location.href.indexOf(oldIds[i]) > -1) {
+      window.location.href = 'https://support.reddithelp.com/hc/en-us/requests/new?ticket_form_id=' + newIds[i]; 
+    }}
+}
+
+//HCAs Redirects
+  var artoldIds = ["360043504111", "360045308832", "24722157271188", "360043514311", "360043076412", "360043514631", "360043515291", "360043517571", "360043517251", "360043517391", "360043517731", "360043517291", "360043517831", "360043079912", "360043517891", "360043517951", "360043517871", "360043517791", "360043518311", "360043080152", "360043518251", "360043079192", "360043079412", "360043080812", "360043080572", "3642963579995", "360043483031", "360058752951", "16471395473812", "360043075812", "360058756191", "360058756471"];
+  var artnewIds = ["360045735031", "360045734911", "26410290525844", "360043076292", "360043076292", "360043076292", "360043076292", "360043076292", "360043076292", "360043076292", "360043076292", "360043076292", "360043076292", "360043076292", "360043076292", "360043076292", "360043076292", "360043076292", "360043076292", "360043076292", "360043076292", "360043076292", "360043076292", "360043076292", "360043076292", "36429514849428", "39673186812564", "39673186812564","42728983564564", "360043513931", "360043513931", "360043513931"]; 
+if (window.location.href.indexOf("/articles") > -1) {
+  for (var i = 0; i < artoldIds.length; i++){
+    if (window.location.href.indexOf(artoldIds[i]) > -1) {
+      window.location.href = 'https://support.reddithelp.com/hc/en-us/articles/' + artnewIds[i]; 
+    }
+  }
+}
+
+//Unique HDA Redirect
+var bdartId = ["38333767330196"];
+if (window.location.href.indexOf("/articles") > -1) {
+  for (var i = 0; i < bdartId.length; i++){
+    if (window.location.href.indexOf(bdartId[i]) > -1) {
+      window.location.href = 'https://support.reddithelp.com/hc/en-us/p/what_is_in_my_reddit_data_copy'; 
+    }
+  }
+}
+//Dropdown expansion
+
+$(document).ready(function() {
+    var nestyPanel = document.getElementsByClassName('nesty-panel')[0];
+    if (nestyPanel) {
+      nestyPanel.setAttribute('style', 'max-height:350px');
+    }
+});
+
+
+//Hide subject and description from NetzDG form
+ var ticketForm = location.search.split('ticket_form_id=')[1]; 
+  
+//hide link to ad support block on form
+//if (ticketForm || window.location.href == "https://support.reddithelp.com/hc/en-us/requests"){
+  		//$('.ad_support_box').hide();
+  		//$('.ad_support_box').style.display = 'none';
+      //$('#ad_support_box').hide();
+  		//$('#ad_support_box').style.display = 'none';
+  		//$('.ad_support_box').style.setProperty("display", "none", "important");
+    //}
+ 
+
+
+//Put hint for API request form
+//if(ticketForm == 14868593862164) {
+  $("#request_custom_fields_14867328473236").on("change paste keyup", function() {
+  
+var selected = $('#request_custom_fields_14867328473236').val();
+if (selected == "api_request_type_researcher") {
+  $('#request_anonymous_requester_email').parent().append('<div class="request_anonymous_requester_email_hint">Please submit this form from a university-affiliated email address or your request may be denied</div>');
+  $('#request_custom_fields_14868066261780').parent().append('<div class="request_custom_fields_14868066261780_hint">The current expected review time is approximately 8-12 weeks, and we can’t guarantee it will be approved. In the meantime, you will be subject to the <a href="https://support.reddithelp.com/hc/en-us/articles/16160319875092-Reddit-Data-API-Wiki">rate limits</a> defined for the free API tier.</div>');
+}
+    
+else if (selected != "api_request_type_researcher") {
+  $('.request_anonymous_requester_email_hint').remove();
+}
+  });
+
+$("#request_custom_fields_14867667461140").on("change paste keyup", function() {
+var selected = $('#request_custom_fields_14867667461140').val();
+if (selected == "api_dev_sign_up_dev_platform") {
+  $('.form-field.request_subject').hide(); // Hide subject
+  $('#request_subject').val('Request to sign up for the Dev platform'); // autofill subject
+  $('label[for=request_description]').html("Describe your use case."); // change description field label
+}
+    
+else if (selected != "api_dev_sign_up_dev_platform") {
+  $('.form-field.request_subject').show(); // show subject
+  $('#request_subject').val(''); // clear autofill subject
+  $('label[for=request_description]').html("Details of inquiry"); // change description field label
+}
+  });
+
+$("#request_custom_fields_14868066261780").on("change paste keyup", function() {
+var selected = $('#request_custom_fields_14868066261780').val();
+if (selected == "api_researcher_data_for_research") {
+  $('.form-field.request_subject').hide(); // Hide subject
+  $('#request_subject').val('Researcher request for approval to distribute data'); // autofill subject
+  $('.form-field.request_description').hide(); // Hide description
+  $('#request_description').val('Researcher request for approval to distribute data'); // autofill description
+  
+}
+    
+else if (selected != "api_researcher_data_for_research") {
+  $('.form-field.request_subject').show(); // show subject
+  $('#request_subject').val(''); // clear autofill subject
+  $('.form-field.request_description').show(); // Hide description
+  $('#request_description').val(''); // clear autofill description
+}
+  });
+ // $(document).ready(function(){
+ //if($('.form-field.request_custom_fields_360012402051').val() == 0){
+ //   $(".request-form input[type='submit']").click(function () {
+  //    event.preventDefault();
+  //  });
+  //  }  
+//}); 
+
+if(ticketForm == 360000152352) {
+$('.form-field.request_subject').hide(); // Hide subject
+$('.form-field.request_description').hide(); // Hide description
+$('#request_subject').val('NetzDG Submission'); // autofill subject
+$('#request_description').val('NetzDG Submission Received'); // autofill description
+}
+
+//Hide Subreddit and Username regex fields on the Report Suicide/Self-Harm form
+if(ticketForm == 360000083203) {
+$('.form-field.request_custom_fields_360026362751').hide(); // Hide Username
+$('.form-field.request_custom_fields_360026362771').hide(); // Hide Subreddit
+}
+//Hide Subreddit regex field on the Report Bug form
+//if(ticketForm == 360000644872) {
+//$('.form-field.request_custom_fields_360026362771').hide(); // Hide Subreddit
+//}
+if(ticketForm == 360001384392){
+  $('#edr_disclaimer').show();
+}
+//if(ticketForm == 360000600232 && document.location.pathname.match(/hc\/es-es/)) {
+//  $('.lt-new-request-tip').html('<i class="fa-solid fa-wand-magic-sparkles lt-new-request-tip__icon" aria-hidden="true"></i>In Spanish! Helper text for Account form.');
+//}
+
+// Hide Subject and Description on NetzDG form
+$("#request_custom_fields_360028647171").on("change", function() {
+  var selected = $(this).val();
+
+  // Check if the selected value is empty or starts with "§"
+  if (selected === "" || selected.startsWith("§")) {
+    // If the first option is selected or an option starting with "§" is selected, hide the fields
+    $('.form-field.request_subject').hide(); // Hide subject
+		$('.form-field.request_description').hide(); // Hide description
+		$('#request_subject').val('NetzDG Submission'); // autofill subject
+		$('#request_description').val('NetzDG Submission Received'); // autofill description
+  } else {
+    // If other options are added, this will keep the fields hidden
+    $('.form-field.request_subject').hide(); // Hide subject
+		$('.form-field.request_description').hide(); // Hide description
+		$('#request_subject').val('NetzDG Submission'); // autofill subject
+		$('#request_description').val('NetzDG Submission Received'); // autofill description
+  }
+}).trigger('change'); // Trigger the change event on page load
+
+// Hide Subreddit and Username regex fields on the Report Content Policy Violation form
+//$("#request_custom_fields_360020806712").on("change", function() {
+  //var selected = $(this).val();
+
+  // Check if the selected value is empty 
+  //if (selected === "") {
+    // Keeps stuff hidden!
+    //$('.form-field.request_custom_fields_360026362751').hide(); // Hide Username
+		//$('.form-field.request_custom_fields_360026362771').hide(); // Hide Subreddit
+  //} else {
+    // If other options are added, this will keep the fields hidden
+    //$('.form-field.request_custom_fields_360026362751').hide(); // Hide Username
+		//$('.form-field.request_custom_fields_360026362771').hide(); // Hide Subreddit
+  //}
+//}).trigger('change'); // Trigger the change event on page load
+
+// Hide Subreddit regex field on the Report Bug form
+	//$("#request_custom_fields_360026085151").on("change", function() {
+  //var selected = $(this).val();
+
+  // Check if the selected value is empty 
+  //if (selected === "") {
+    // Keeps stuff hidden!
+	//$('.form-field.request_custom_fields_360026362771').hide(); // Hide Subreddit
+  //} else {
+    // If other options are added, this will keep the fields hidden
+	//$('.form-field.request_custom_fields_360026362771').hide(); // Hide Subreddit
+ // $('.form-field.request_custom_fields_360026362751').show(); // Show Username
+ // }
+//}).trigger('change'); // Trigger the change event on page load
+
+// Hide details and attachments on the report NSFW form
+	//$("#request_custom_fields_360043027511").on("change", function() {
+  //var selected = $(this).val();
+
+  //if (selected === "nsfw_subreddit" || selected === "nsfw_profile" || selected === "nsfw_user" || selected === "nsfw_content") {
+    // If the first option is selected or an option starting with "nsfw_" is selected, hide the fields
+   // $('.form-field.request_description').hide();
+   // $('#request_description').val('Users can’t submit a description on these tickets. All the relevant information is in the form to the left.'); // Autofill description
+   // $('label[for="request-attachments"]').closest('.form-field').hide();
+ // } else {
+    // If any other option is selected, show the fields
+   // $('.form-field.request_description').show();
+  //  $('label[for="request-attachments"]').closest('.form-field').show();
+ // }
+//}).trigger('change'); // Trigger the change event on page load
+
+
+$("#request_custom_fields_15968861076756").on("change", function() {
+  var selected = $(this).val();
+
+  if (selected === "report_nsfw/18__users__subreddits__or_content_") {
+    // If the first option is selected, hide the fields
+    $('.form-field.request_description').hide();
+    $('#request_description').val('Users can’t submit a description on these tickets. All the relevant information is in the form to the left.'); // Autofill description
+    $('label[for="request-attachments"]').closest('.form-field').hide();
+    $('.form-field.request_subject').hide(); // Hide subject
+		$('#request_subject').val('NSFW/18+ Submission'); // Autofill subject
+    $('#request_custom_fields_360026362771').show();
+    $('footer input[type="submit"]').show(); // Show submit button
+    $('.request_anonymous_requester_email').show();
+  } else if (selected === "report_bug") {
+    // If "report_bug" option is selected, hide the fields and the submit button
+    $('.form-field.request_description').hide(); // Hide description
+    $('.form-field.request_subject').hide();
+    $('label[for="request-attachments"]').closest('.form-field').hide();
+    $('.form-field.request_custom_fields_360026085151').hide();
+    $('footer input[type="submit"]').hide();
+    $('.request_anonymous_requester_email').hide();
+  } else {
+    // If any other option is selected, show the fields and the submit button
+    $('.form-field.request_description').show();
+    $('label[for="request-attachments"]').closest('.form-field').show();
+    $('.form-field.request_subject').show(); // Show subject
+    $('#request_custom_fields_360026085151').show()
+    $('footer input[type="submit"]').show(); // Show submit button
+    $('#request_subject').val(''); // Reset subject
+    $('.form-field.request_description').val('-');
+    $('.request_anonymous_requester_email').show();
+    
+  }
+}).trigger('change'); // Trigger the change event on page load
+
+
+  
+//subreddit report form subreddit field show
+
+$("#request_custom_fields_360043027511").on("change", function() {
+  var selected = $(this).val();
+
+  if (selected === "nsfw_subreddit") {
+    // If the first option is selected or an option starting with "nsfw_" is selected, hide the fields
+   $('#request_custom_fields_360026362771').show();
+  }
+}).trigger('change'); // Trigger the change event on page load
+
+
+// Hide fields and submit button on account issues form
+$("#request_custom_fields_24251393").on("change", function() {
+  var selected = $(this).val();
+
+  if (selected === "forgot_email" || selected === "reset_password" || selected === "changing_recycling_usernames" || selected === "forgot_username" || selected === "where_is_my_post" || selected === "deactivation" || selected === "fpr_old_email" || selected === "suspension_notice") {
+    // Hide details of inquiry
+    $('#request_description').closest('.form-field').hide();
+    // Hide attachments
+    $('#request-attachments').closest('.form-field').hide();
+    // Hide subject of inquiry
+    $('#request_subject').closest('.form-field').hide();
+    // Hide Your Reddit username
+    $('#request_custom_fields_360026362751').closest('.form-field').hide();
+    $('#request_custom_fields_360023784812').closest('.form-field').hide();
+    $('#request_custom_fields_360023784832').closest('.form-field').hide();
+    // Hide Submit button
+    $('footer input[type="submit"]').hide();
+    //Hide Subreddit field
+		$('.form-field.request_custom_fields_360026362771').hide();
+  } else {
+    // If other options are selected, show the hidden fields again
+    $('#request_description').closest('.form-field').show();
+    $('#request-attachments').closest('.form-field').show();
+    $('#request_subject').closest('.form-field').show();
+    $('#request_custom_fields_360026362751').closest('.form-field').show();
+    $('#request_custom_fields_360023784812').closest('.form-field').show();
+    $('#request_custom_fields_360023784832').closest('.form-field').show();
+    $('footer input[type="submit"]').show();
+  }
+}).trigger('change'); // Trigger the change event on page load
+
+if(ticketForm == 15968767746196) {
+$('.form-field.request_custom_fields_360026362771').show(); // Show Subreddit
+}
+
+//Hide description from Mobile Beta program form
+  
+$("#request_custom_fields_17366061344148").on("change", function() {
+  var selected = $(this).val();
+
+if (selected === "" || selected === "ios_mobile_beta" || selected === "android_mobile_beta") {
+  // Hide details of inquiry
+    $('.form-field.request_description').hide();
+    $('#request_description').val('-'); // Autofill description
+    // Hide attachments
+    $('#request-attachments').closest('.form-field').hide();
+    // Hide subject of inquiry
+    $('#request_subject').closest('.form-field').hide();
+    $('#request_subject').val('Mobile Beta sign up'); // Autofill subject
+   } else {
+    // If other options are selected, show the hidden fields again
+    $('#request_description').closest('.form-field').show();
+    $('#request-attachments').closest('.form-field').show();
+    $('#request_subject').closest('.form-field').show();
+  }
+}).trigger('change'); // Trigger the change event on page load
+
+//Mobile Beta Form Agreement IOS text
+$("#request_custom_fields_17366061344148").on("change paste keyup", function() {
+var selected = $('#request_custom_fields_17366061344148').val();
+if (selected == "ios_mobile_beta") {
+  $('#request_custom_fields_18972632180628').parent().append('<div class="request_custom_fields_18972632180628_hint">You agree to be considered to become a beta user for Reddit’s mobile apps (any such app a “Reddit beta app”).  If you are selected as a potential beta user, we may contact you via Reddit PM at the username you’ve identified in this form and/or via the email address identified in this form if it is associated with that username. You acknowledge that Reddit selects beta users at Reddit’s discretion. If selected as a beta user, you agree that your use of the Reddit beta app will be subject to the <a href="https://www.redditinc.com/policies/user-agreement">Reddit User Agreement</a> and <a href="https://www.reddit.com/policies/privacy-policy">Privacy Policy</a> as well as the <a href="https://www.apple.com/legal/internet-services/itunes/testflight/sren/terms.html">Test Flight Terms of Service</a>.<br><br>Please note, in-app purchases made within the Reddit beta app will not be charged to your account, but not all in-app purchases will complete or otherwise be available to you in the Reddit beta app.  Any in-app purchases completed in the beta app are subject to unavailability or removal once you are no longer using the Reddit beta app.</div>');
+  } else if (selected != "ios_mobile_beta") {
+    $('.request_custom_fields_18972632180628_hint').remove();
+}
+}).trigger('change');
+
+//Mobile Beta Form Agreement Android text
+$("#request_custom_fields_17366061344148").on("change paste keyup", function() {
+var selected = $('#request_custom_fields_17366061344148').val();
+if (selected == "android_mobile_beta") {
+  $('#request_custom_fields_18972558504468').parent().append('<div class="request_custom_fields_18972558504468_hint">You agree to be considered to become a beta user for Reddit’s mobile apps (any such app a “Reddit beta app”).  If you are selected as a potential beta user, we may contact you via Reddit PM at the username you’ve identified in this form and/or via the email address identified in this form if it is associated with that username. You acknowledge that Reddit selects beta users at Reddit’s discretion. If selected as a beta user, you agree that your use of any Reddit beta app will be subject to the <a href="https://www.redditinc.com/policies/user-agreement">Reddit User Agreement</a> and <a href="https://www.reddit.com/policies/privacy-policy">Privacy Policy</a>.<br><br>Further you acknowledge that you understand that any Reddit beta app we make available is pre-release, and therefore may be incomplete, contain errors or have other inaccuracies. You should back up any data prior to using any Reddit beta app. Reddit is not responsible for any costs you may incur as a result of using any Reddit beta app, including but not limited to any damage, loss, or corruption of any software, information or data. If you have a production version of a Reddit’s mobile app already installed, you should back-up any data associated prior to installing the Reddit beta app. You expressly acknowledge and agree that any use of Reddit’s beta app is done entirely at your own risk.<br><br>Further, you hereby acknowledge and agree that the content contained in, and your use of, any Reddit beta app that is not already publicly available shall be considered confidential unless Reddit explicitly authorizes public disclosure. You agree to treat the Reddit beta app as confidential, e.g., not share it with others who do not have the Reddit beta app installed.<br><br>To terminate your participation in beta-testing, please delete the Reddit beta app from your device. Deleting the Reddit beta app from your device will also delete any data you have generated within that Reddit beta app, and may delete any data created in a previously installed full version of the Reddit mobile app (see exception below for in-app purchases). Deleting the Reddit beta app will not delete any feedback or beta input that you have already provided to Reddit.<br><br>Please note not all in-app purchases will complete or otherwise be available to you in the Reddit beta app. However, any in-app purchases completed with the Reddit username you used in the Reddit beta app will remain available to you for that username in the production version of the Reddit mobile app after you are no longer using the Reddit beta app.</div>');
+  } else if (selected != "android_mobile_beta") {
+    $('.request_custom_fields_18972558504468_hint').remove();
+}
+}).trigger('change');
+
+
+ 
+//hide link to ad support block on form
+if (ticketForm || window.location.href == "https://support.reddithelp.com/hc/en-us/requests"){
+  		$('.ad_support_box').hide();
+  		$('.dsa_report_box').hide();
+  		//$('.ad_support_box').style.display = 'none';
+      //$('#ad_support_box').hide();
+  		//$('#ad_support_box').style.display = 'none';
+  		//$('.ad_support_box').style.setProperty("display", "none", "important");
+    }
+
+
+//Hide description from Programs help - helper rewards option
+  
+$(function () {
+  $("#request_custom_fields_19148906982804").on("change", function() {
+    var selected = $(this).val();
+
+    // Remove any previously injected creator disclaimer
+    $("#injected_creator_disclaimer").remove();
+
+    if (selected === "helper_rewards_program") {
+      // Hide fields
+      $(".form-field.request_description").hide();
+      $("#request-attachments").closest(".form-field").hide();
+      $("#request_subject").closest(".form-field").hide();
+      $(".form-field.request_subject").hide();
+      $("footer input[type='submit']").hide();
+
+      // (no disclaimer shown in this branch per your current behavior)
+
+    } else if (selected === "creator_program") {
+      // Show fields
+      $("#request_description").closest(".form-field").show();
+      $("#request-attachments").closest(".form-field").show();
+      $("#request_subject").closest(".form-field").show();
+      $("footer input[type='submit']").show();
+
+      // Insert the Creator Program disclaimer *below this dropdown*
+      var $src = $("#collectible_avatars_creator_program_disclaimer");
+      if ($src.length) {
+        var html =
+          '<div id="injected_creator_disclaimer" class="help-block">' +
+            $src.html() +
+          "</div>";
+
+        $("#request_custom_fields_19148906982804")
+          .closest(".form-field")
+          .after(html);
+      }
+    } else {
+      // Default: show everything
+      $("#request_description").closest(".form-field").show();
+      $("#request-attachments").closest(".form-field").show();
+      $("#request_subject").closest(".form-field").show();
+      $("footer input[type='submit']").show();
+    }
+  }).trigger("change");
+});
+
+
+var selected = $('#request_issue_type_select option:selected').val();
+if (selected == "16510899084308") {
+  //Secondary helper text for Reddit URL for Copyright Field ID 24438765
+$('#request_custom_fields_24438765_hint').after(copyright_url_second_hint);
+$('#copyright_url_second_hint').show();
+//Secondary helper text for Additonal information for Copyright Field ID 24438775
+$('#request_custom_fields_24438775_hint').after(copyright_abuse);
+$('#copyright_abuse').show();
+  
+$("#request_custom_fields_16510589022228").on("change", function() {
+var selected = $('#request_custom_fields_16510589022228').val();
+if (selected === "contact_form_trademark_request") {
+  if ($('#disclaimer2')){
+   $('#disclaimer2').remove();
+}   
+  if ($('#disclaimer')){
+   $('#disclaimer').remove();
+}   
+$('#request_description').parent().append(tm_des_hint);
+  $('#request_anonymous_requester_email').parent().append(dmca_anon_hint);
+}  
+  else if (selected === "contact_form_copyright_infringement_dmca") {
+  if ($('#disclaimer2')){
+   $('#disclaimer2').remove();
+}   
+//$('#request_anonymous_requester_email').parent().append(dmca_anon_hint);
+  $('#disclaimer').remove();
+}  
+else if (selected === "contact_form_copyright_counter_notice") {
+  $('#disclaimer2').remove()
+  $('#disclaimer').remove();
+}
+})
+}
+
+$('#request_custom_fields_24334943').keyup(function() {
+		$('#request_subject').val($('#request_custom_fields_24334943').val());
+  })
+
+var selected = $('#request_issue_type_select option:selected').val();
+if (selected == "22936680744980") {
+$('.form-field.request_subject').hide(); // Hide subject
+   $('div.lt-new-request-tip_info').hide();
+$('div.com_feed_tip').show();
+  $('#request_subject').val('Reddit for community feedback'); // autofill subject
+  $('label[for=request_description]').html("What is your feedback or concern about Reddit for Community?");
+}
+
+function applyRedditForCommunityFeedbackInitialState() {
+  if ($('#request_issue_type_select').val() == "22936680744980") {
+    $('.form-field.request_subject').hide();
+    $('#request_subject').val('Reddit for community feedback');
+  }
+}
+
+applyRedditForCommunityFeedbackInitialState();
+setTimeout(applyRedditForCommunityFeedbackInitialState, 250);
+setTimeout(applyRedditForCommunityFeedbackInitialState, 1000);
+setTimeout(applyRedditForCommunityFeedbackInitialState, 1500);
+
+$(document).ready(function() {
+  $('.request_custom_fields_360035181512').after($('#banned_community_appeal'));
+
+  $(document).on("change", "#request_custom_fields_360035181512", function() {
+    var selected = $(this).val();
+
+    // 1. If it's a Banned Subreddit Appeal selection -> Show disclaimer, Hide ALL fields
+    if (selected === "banned_subreddit_appeal") {
+      $('#banned_community_appeal').show();
+      
+      $('#request_description').closest('.form-field').hide();
+      $('#request-attachments').closest('.form-field').hide();
+      $('#request_subject').closest('.form-field').hide();
+      $('#request_custom_fields_360026362771').closest('.form-field').hide(); 
+      $('#request_custom_fields_360026362751').closest('.form-field').hide();
+      $('footer input[type="submit"]').hide();
+      
+    // 2. If it's one of the other options -> Show fields
+    } else if (selected === "nsfw_subreddit_appeal" || selected === "sr_ban_evasion" || selected === "reddithelp_report_subreddit_violation") {
+      $('#banned_community_appeal').hide(); 
+      
+      $('#request_description').closest('.form-field').show();
+      $('#request-attachments').closest('.form-field').show();
+      $('#request_subject').closest('.form-field').show();
+      $('#request_custom_fields_360026362771').closest('.form-field').show();
+      $('#request_custom_fields_360026362751').closest('.form-field').show(); 
+      $('footer input[type="submit"]').show();
+      
+      $('.request_subject').show(); 
+      $('#request_subject').val('');
+      $('label[for=request_description]').html("Details of inquiry");
+      
+    // 3.If they select anything else -> Hide disclaimer, show standard fields
+    } else {
+      $('#banned_community_appeal').hide();
+      
+      $('#request_description').closest('.form-field').show();
+      $('#request-attachments').closest('.form-field').show();
+      $('#request_subject').closest('.form-field').show();
+      $('#request_custom_fields_360026362771').closest('.form-field').show(); 
+      $('#request_custom_fields_360026362751').closest('.form-field').show();
+      $('footer input[type="submit"]').show();
+    }
+  });
+
+  setTimeout(function() {
+    $("#request_custom_fields_360035181512").trigger('change');
+  }, 500);
+});
+
+// display correct tip on EU Illegal Content Report Form
+var selected = $('#request_issue_type_select option:selected').val();
+if (selected == "19623931614484"){
+$('div.lt-new-request-tip_info').hide();
+$('div.dsa_tip').show();
+  $('.form-field.request_subject').hide(); // Hide subject
+  $('label[for=request_description]').html($('#dsa_report_details').html());
+  //$('label[for=request_description]').append(dsa_report_details);
+  $('label[for=request-attachments]').html($('#dsa_report_atts').html());
+  $('.request_custom_fields_19617280332564').hide();
+  $('.request_custom_fields_19617254474644').hide();
+  $('.request_custom_fields_19617257411988').hide();
+  $('.request_custom_fields_19617269211668').hide();
+  $('.request_custom_fields_19617273793684').hide();
+  $('.request_custom_fields_19617298669460').hide();
+  $('.request_custom_fields_19617260590612').hide();
+  $('.request_custom_fields_19617300215060').hide();
+  $('.request_custom_fields_19617300985364').hide();
+  $('.form-field.request_subject').hide(); // Hide subject
+	//$('#request_subject').val('EU Illegal Content Report'); // autofill subject
+  $('.request_custom_fields_35141833569940').append(osa_type_note);
+  $('#osa_type_note').show();
+  $('div.request_ticket_form_id').hide();
+  //Secondary helper text for Reddit URL for Copyright Field ID 24438765
+$('#request_custom_fields_24438765_hint').after(copyright_url_second_hint);
+$('#copyright_url_second_hint').show();
+//Secondary helper text for Additonal information for Copyright Field ID 24438775
+$('#request_custom_fields_24438775_hint').after(copyright_abuse);
+$('#copyright_abuse').show();
+  } 
+
+function applyIllegalContentInitialState() {
+  if ($('#request_issue_type_select').val() == "19623931614484") {
+    $('#request_subject').closest('.form-field').hide();
+  }
+}
+
+applyIllegalContentInitialState();
+setTimeout(applyIllegalContentInitialState, 250);
+setTimeout(applyIllegalContentInitialState, 1000);
+setTimeout(applyIllegalContentInitialState, 1500);
+
+$("#request_custom_fields_35141892305556").on("change", function() {
+  var selected = $(this).val();
+if (selected === "uk_odsa") {
+  if ($('#osa_disc2').length === 0) { $('#upload-dropzone').after(osa_disc); }
+  $('#osa_disc2').show();
+    $('.form-field.request_subject').hide(); // Hide subject
+  $('#request_subject').val('UK Illegal Content Report'); // autofill subject
+  $('#eca_hint_tst').remove();
+  $('label[for=request_description]').html($('#dsa_report_details').html());
+  //$('label[for=request_description]').append(dsa_report_details);
+  $('#request-attachments').closest('.form-field').show();
+  osa_restricted_1 = '<div id="osa_restricted_1">' + document.getElementById('osa_restricted_1').innerHTML + '</div>';
+  osa_restricted_2 = '<div id="osa_restricted_2">' + document.getElementById('osa_restricted_2').innerHTML + '</div>';
+  $('p#sg_report_details_helper1.help-block').remove();
+  //if ($('#osa_restricted_2').length === 0) {
+  //$('div.request_custom_fields_38987141693716').append(osa_restricted_2);
+ // }
+//$('p.osa_restricted_2').show();
+   //if ($('#osa_restricted_1').length === 0) {
+//$('#request_custom_fields_38987141693716_label').after(osa_restricted_1);
+  // }
+//$('p.osa_restricted_1').show();
+  }
+}).trigger('change');
+$("#request_custom_fields_35141892305556").on("change", function() {
+  var selected = $(this).val();
+if (selected === "eu_odsa") {
+   if ($('#osa_disc2').length === 0) { $('#upload-dropzone').after(osa_disc); }
+  $('#osa_disc2').show();
+    $('.form-field.request_subject').hide(); // Hide subject
+  $('#request_subject').val('EU Illegal Content Report'); // autofill subject
+  $('p#sg_report_details_helper1.help-block').remove();
+  $('label[for=request_description]').html($('#dsa_report_details').html());
+  $('#eca_hint_tst').remove();
+  $('#request-attachments').closest('.form-field').show();
+  }
+}).trigger('change');
+$("#request_custom_fields_35141892305556").on("change", function() {
+  var selected = $(this).val();
+if (selected === "au_odsa") {
+  $('#osa_disc2').remove();
+  $('.form-field.request_subject').hide(); // Hide subject
+  $('#request_subject').val('AU Illegal Content Report'); // autofill subject
+  $('label[for=request_description]').html($('#au_report_details').html());
+  //$('label[for=request_description]').append(au_report_details);
+  //$('#request-attachments').closest('.form-field').hide();
+  $('.request_custom_fields_38648090968596').append(au_report_note_1);
+  $('.request_custom_fields_38648090968596').append(au_report_note_2);
+   $('#au_report_note_1').show();
+   $('#au_report_note_2').show();
+  $('#eca_hint_tst').remove();
+  $('p#sg_report_details_helper1.help-block').remove();
+  }
+}).trigger('change');
+
+$("#request_custom_fields_35141892305556").on("change", function() {
+  var selected = $(this).val();
+
+    if (selected === "br_odsa") {
+    $('.form-field.request_subject').hide(); // Hide subject
+    $('#request_subject').val('BR Illegal Content Report');
+    $('label[for=request_description]').html($('#eca_details').html());
+
+    // 1. ALWAYS remove the old one first. 
+    // This prevents the "stacking" effect seen in your HTML.
+    $('#eca_hint_tst').remove(); 
+
+    // 2. Create it as a DIV (not a P) because it contains a UL (list).
+    // Lists are illegal inside P tags and cause the HTML to break.
+    var eca_content = document.getElementById('eca_hint1').innerHTML;
+    var eca_hint_tst = '<div id="eca_hint_tst" style="margin-top:15px;">' + eca_content + '</div>';
+    
+    // 3. Append it to the container
+    $('.request_custom_fields_35141892305556').append(eca_hint_tst);
+    $('#eca_hint_tst').show();
+
+    if ($('#osa_disc2').length === 0) { $('#upload-dropzone').after(osa_disc); }
+    $('#osa_disc2').show();
+		$('p#sg_report_details_helper1.help-block').remove();
+  } else {
+    // 4. Clean up: Remove it entirely when switching to other regions
+    $('#eca_hint_tst').remove();
+  }
+}).trigger('change');
+
+$("#request_custom_fields_35141892305556").on("change", function() {
+  var selected = $(this).val();
+if (selected === "sg_odsa") {
+  $('#osa_disc2').remove();
+  $('.form-field.request_subject').hide(); // Hide subject
+  $('#request_subject').val('SG Illegal Content Report'); // autofill subject
+  $('label[for=request_description]').html($('#sg_report_details').html());
+  //$('label[for=request_description]').append(au_report_details);
+  $('.form-field.request_description').after(sg_report_details_helperv);
+  } else {
+    $('p#sg_report_details_helper1.help-block').remove();
+  }
+}).trigger('change');
+
+//Show hints for OSA restricted field
+
+
+
+$("#request_custom_fields_38987070212500").on("change", function() {
+  var selected = $(this).val();
+	if (selected === "restricted_content_for_minors_osa") {
+	$('.form-field.request_description').hide(); // Hide description
+  $('#request_description').val('Restricted Content For Minors Submission'); // autofill description
+    osa_restricted_1 = '<div id="osa_restricted_1">' + document.getElementById('osa_restricted_1').innerHTML + '</div>';
+  osa_restricted_2 = '<div id="osa_restricted_2">' + document.getElementById('osa_restricted_2').innerHTML + '</div>';
+ // if ($('#osa_restricted_2').length === 0) {
+  $('div.request_custom_fields_38987141693716').append(osa_restricted_2);
+  //}
+$('p.osa_restricted_2').show();
+   //if ($('#osa_restricted_1').length === 0) {
+$('#request_custom_fields_38987141693716_label').after(osa_restricted_1);
+   //}
+$('p.osa_restricted_1').show();
+    
+  } else {
+    $('.form-field.request_description').show();
+    if ($('#request_description').val() === 'Restricted Content For Minors Submission') {
+      $('#request_description').val('');
+    }
+  }
+}).trigger('change');
+
+//show or hide link 2 field based on link 1 content
+  $('#request_custom_fields_19617252816916').keyup(function() {
+  if($('#request_custom_fields_19617252816916').length > 0 && $('#request_custom_fields_19617252816916').val() != ''){
+		$('.request_custom_fields_19617280332564').show();
+ }
+  })
+   $('#request_custom_fields_19617252816916').keyup(function() {
+  if($('#request_custom_fields_19617252816916').length == 0 || $('#request_custom_fields_19617252816916').val() == ''){
+		if($('#request_custom_fields_19617280332564').length == 0 || $('#request_custom_fields_19617280332564').val() == ''){
+    $('.request_custom_fields_19617280332564').hide();
+    }
+    if($('#request_custom_fields_19617280332564').length > 0 && $('#request_custom_fields_19617280332564').val() != ''){
+		$('.request_custom_fields_19617280332564').show();
+ }
+ }
+  })
+//show or hide link 3 field based on link 2 content
+  $('#request_custom_fields_19617280332564').keyup(function() {
+  if($('#request_custom_fields_19617280332564').length > 0 && $('#request_custom_fields_19617280332564').val() != ''){
+		$('.request_custom_fields_19617254474644').show();
+ }
+  })
+   $('#request_custom_fields_19617280332564').keyup(function() {
+  if($('#request_custom_fields_19617280332564').length == 0 || $('#request_custom_fields_19617280332564').val() == ''){
+		if($('#request_custom_fields_19617254474644').length == 0 || $('#request_custom_fields_19617254474644').val() == ''){
+		$('.request_custom_fields_19617254474644').hide();
+    }
+    if($('#request_custom_fields_19617254474644').length > 0 && $('#request_custom_fields_19617254474644').val() != ''){
+		$('.request_custom_fields_19617254474644').show();
+ }
+ }
+  })
+//show or hide link 4 field based on link 3 content
+  $('#request_custom_fields_19617254474644').keyup(function() {
+  if($('#request_custom_fields_19617254474644').length > 0 && $('#request_custom_fields_19617254474644').val() != ''){
+		$('.request_custom_fields_19617257411988').show();
+ }
+  })
+   $('#request_custom_fields_19617254474644').keyup(function() {
+  if($('#request_custom_fields_19617254474644').length == 0 || $('#request_custom_fields_19617254474644').val() == ''){
+		if($('#request_custom_fields_19617257411988').length > 0 && $('#request_custom_fields_19617257411988').val() != ''){
+		$('.request_custom_fields_19617257411988').show();
+ }
+    if($('#request_custom_fields_19617257411988').length == 0 || $('#request_custom_fields_19617257411988').val() == ''){
+		$('.request_custom_fields_19617257411988').hide();
+    }
+ }
+  })
+//show or hide link 5 field based on link 4 content
+  $('#request_custom_fields_19617257411988').keyup(function() {
+  if($('#request_custom_fields_19617257411988').length > 0 && $('#request_custom_fields_19617257411988').val() != ''){
+		$('.request_custom_fields_19617269211668').show();
+ }
+  })
+   $('#request_custom_fields_19617257411988').keyup(function() {
+  if($('#request_custom_fields_19617257411988').length == 0 || $('#request_custom_fields_19617257411988').val() == ''){
+		if($('#request_custom_fields_19617269211668').length > 0 && $('#request_custom_fields_19617269211668').val() != ''){
+		$('.request_custom_fields_19617269211668').show();
+ }
+    if($('#request_custom_fields_19617269211668').length == 0 || $('#request_custom_fields_19617269211668').val() == ''){
+		$('.request_custom_fields_19617269211668').hide();
+ }
+ }
+  })
+//show or hide link 6 field based on link 5 content
+  $('#request_custom_fields_19617269211668').keyup(function() {
+  if($('#request_custom_fields_19617269211668').length > 0 && $('#request_custom_fields_19617269211668').val() != ''){
+		$('.request_custom_fields_19617273793684').show();
+ }
+  })
+   $('#request_custom_fields_19617269211668').keyup(function() {
+  if($('#request_custom_fields_19617269211668').length == 0 || $('#request_custom_fields_19617269211668').val() == ''){
+		if($('#request_custom_fields_19617273793684').length > 0 && $('#request_custom_fields_19617273793684').val() != ''){
+		$('.request_custom_fields_19617273793684').show();
+ }
+    if($('#request_custom_fields_19617273793684').length == 0 || $('#request_custom_fields_19617273793684').val() == ''){
+		$('.request_custom_fields_19617273793684').hide();
+ }
+ }
+  })
+//show or hide link 7 field based on link 6 content
+  $('#request_custom_fields_19617273793684').keyup(function() {
+  if($('#request_custom_fields_19617273793684').length > 0 && $('#request_custom_fields_19617273793684').val() != ''){
+		$('.request_custom_fields_19617298669460').show();
+ }
+  })
+   $('#request_custom_fields_19617273793684').keyup(function() {
+  if($('#request_custom_fields_19617273793684').length == 0 || $('#request_custom_fields_19617273793684').val() == ''){
+		if($('#request_custom_fields_19617298669460').length > 0 && $('#request_custom_fields_19617298669460').val() != ''){
+		$('.request_custom_fields_19617298669460').show();
+ }
+    if($('#request_custom_fields_19617298669460').length == 0 || $('#request_custom_fields_19617298669460').val() == ''){
+		$('.request_custom_fields_19617298669460').hide();
+ }
+ }
+  })
+//show or hide link 8 field based on link 7 content
+  $('#request_custom_fields_19617298669460').keyup(function() {
+  if($('#request_custom_fields_19617298669460').length > 0 && $('#request_custom_fields_19617298669460').val() != ''){
+		$('.request_custom_fields_19617260590612').show();
+ }
+  })
+   $('#request_custom_fields_19617298669460').keyup(function() {
+  if($('#request_custom_fields_19617298669460').length == 0 || $('#request_custom_fields_19617298669460').val() == ''){
+		if($('#request_custom_fields_19617260590612').length > 0 && $('#request_custom_fields_19617260590612').val() != ''){
+		$('.request_custom_fields_19617260590612').show();
+ }
+    if($('#request_custom_fields_19617260590612').length == 0 || $('#request_custom_fields_19617260590612').val() == ''){
+		$('.request_custom_fields_19617260590612').hide();
+ }
+ }
+  })
+//show or hide link 9 field based on link 8 content
+  $('#request_custom_fields_19617260590612').keyup(function() {
+  if($('#request_custom_fields_19617260590612').length > 0 && $('#request_custom_fields_19617260590612').val() != ''){
+		$('.request_custom_fields_19617300215060').show();
+ }
+  })
+   $('#request_custom_fields_19617260590612').keyup(function() {
+  if($('#request_custom_fields_19617260590612').length == 0 || $('#request_custom_fields_19617260590612').val() == ''){
+				if($('#request_custom_fields_19617300215060').length > 0 && $('#request_custom_fields_19617300215060').val() != ''){
+		$('.request_custom_fields_19617300215060').show();
+ }
+    if($('#request_custom_fields_19617300215060').length == 0 || $('#request_custom_fields_19617300215060').val() == ''){
+		$('.request_custom_fields_19617300215060').hide();
+ }
+ }
+  })
+//show or hide link 10 field based on link 9 content
+  $('#request_custom_fields_19617300215060').keyup(function() {
+  if($('#request_custom_fields_19617300215060').length > 0 && $('#request_custom_fields_19617300215060').val() != ''){
+		$('.request_custom_fields_19617300985364').show();
+ }
+  })
+   $('#request_custom_fields_19617300215060').keyup(function() {
+  if($('#request_custom_fields_19617300215060').length == 0 || $('#request_custom_fields_19617300215060').val() == ''){
+						if($('#request_custom_fields_19617300985364').length > 0 && $('#request_custom_fields_19617300985364').val() != ''){
+		$('.request_custom_fields_19617300985364').show();
+ }
+    if($('#request_custom_fields_19617300985364').length == 0 || $('#request_custom_fields_19617300985364').val() == ''){
+		$('.request_custom_fields_19617300985364').hide();
+ }
+ }
+  })
+// Hide and autofill name and email fields if anon submission
+$('#request_custom_fields_19616773392276').change(function() {
+if($('#request_custom_fields_19616773392276').prop('checked') === true) {
+  $('.request_custom_fields_24438575').hide();
+  $('#request_custom_fields_24438575').val('Anon DSA');
+  $('.request_anonymous_requester_email').hide();
+  $('#request_anonymous_requester_email').val('anon-dsa@example.com');
+}else{
+  $('.request_custom_fields_24438575').show();
+  $('.request_anonymous_requester_email').show();
+  $('#request_anonymous_requester_email').val('');
+  $('#request_custom_fields_24438575').val('');
+}
+})
+
+if ($('#request_custom_fields_19616773392276').prop('checked')) {
+  $('.request_custom_fields_24438575').hide();
+  $('#request_custom_fields_24438575').val('Anon DSA');
+  $('.request_anonymous_requester_email').hide();
+  $('#request_anonymous_requester_email').val('anon-dsa@example.com');
+}else{
+  $('.request_custom_fields_24438575').show();
+  $('.request_anonymous_requester_email').show();
+  $('#request_anonymous_requester_email').val('');
+  $('#request_custom_fields_24438575').val('');
+}
+
+// display correct tip on Appeal a Decision on Your EU Illegal Content Report Form
+var selected = $('#request_issue_type_select option:selected').val();
+if (selected == "19625658590612") {
+$('div.lt-new-request-tip_info').hide();
+$('div.dsa_appeal_tip').show();
+  $('.request_custom_fields_19625698843924').hide();
+  $('.request_custom_fields_19625699552532').hide();
+  $('.request_custom_fields_19625700397588').hide();
+  $('.request_custom_fields_19625755462548').hide();
+  $('.request_custom_fields_19625769707284').hide();
+  $('.request_custom_fields_19625770512788').hide();
+  $('.request_custom_fields_19625750261524').hide();
+  $('.request_custom_fields_19625767208340').hide();
+  $('.request_custom_fields_19625803545364').hide();
+  $('.form-field.request_subject').hide(); // Hide subject
+	$('#request_subject').val('Appeal a Decision on Your EU Illegal Content Report'); // autofill subject
+  $('#dsa_appeal_details').show();
+  $('label[for=request_description]').html("");
+  $('label[for=request_description]').append(dsa_appeal_details);
+  $('#dsa_appeal_atts').show();
+  $('label[for=request-attachments]').html("");
+  $('label[for=request-attachments]').append(dsa_appeal_atts);
+  $('.request_custom_fields_19625657760532').hide();
+  }
+
+function applyEuIllegalContentAppealInitialState() {
+  if ($('#request_issue_type_select').val() == "19625658590612") {
+    $('.form-field.request_subject').hide();
+    $('#request_subject').val('Appeal a Decision on Your EU Illegal Content Report');
+  }
+}
+
+applyEuIllegalContentAppealInitialState();
+setTimeout(applyEuIllegalContentAppealInitialState, 250);
+setTimeout(applyEuIllegalContentAppealInitialState, 1000);
+setTimeout(applyEuIllegalContentAppealInitialState, 1500);
+
+//show or hide appeal link 2 field based on link 1 content
+  $('#request_custom_fields_19625697606804').keyup(function() {
+  if($('#request_custom_fields_19625697606804').length > 0 && $('#request_custom_fields_19625697606804').val() != ''){
+		$('.request_custom_fields_19625698843924').show();
+ }
+  })
+   $('#request_custom_fields_19625697606804').keyup(function() {
+  if($('#request_custom_fields_19625697606804').length == 0 || $('#request_custom_fields_19625697606804').val() == ''){
+		if($('#request_custom_fields_19625698843924').length == 0 || $('#request_custom_fields_19625698843924').val() == ''){
+    $('.request_custom_fields_19625698843924').hide();
+    }
+    if($('#request_custom_fields_19625698843924').length > 0 && $('#request_custom_fields_19625698843924').val() != ''){
+		$('.request_custom_fields_19625698843924').show();
+ }
+ }
+  })
+//show or hide appeal link 3 field based on link 2 content
+  $('#request_custom_fields_19625698843924').keyup(function() {
+  if($('#request_custom_fields_19625698843924').length > 0 && $('#request_custom_fields_19625698843924').val() != ''){
+		$('.request_custom_fields_19625699552532').show();
+ }
+  })
+   $('#request_custom_fields_19625698843924').keyup(function() {
+  if($('#request_custom_fields_19625698843924').length == 0 || $('#request_custom_fields_19625698843924').val() == ''){
+		if($('#request_custom_fields_19625699552532').length == 0 || $('#request_custom_fields_19625699552532').val() == ''){
+		$('.request_custom_fields_19625699552532').hide();
+    }
+    if($('#request_custom_fields_19625699552532').length > 0 && $('#request_custom_fields_19625699552532').val() != ''){
+		$('.request_custom_fields_19625699552532').show();
+ }
+ }
+  })
+//show or hide appeal link 4 field based on link 3 content
+  $('#request_custom_fields_19625699552532').keyup(function() {
+  if($('#request_custom_fields_19625699552532').length > 0 && $('#request_custom_fields_19625699552532').val() != ''){
+		$('.request_custom_fields_19625700397588').show();
+ }
+  })
+   $('#request_custom_fields_19625699552532').keyup(function() {
+  if($('#request_custom_fields_19625699552532').length == 0 || $('#request_custom_fields_19625699552532').val() == ''){
+		if($('#request_custom_fields_19625700397588').length > 0 && $('#request_custom_fields_19625700397588').val() != ''){
+		$('.request_custom_fields_19625700397588').show();
+ }
+    if($('#request_custom_fields_19625700397588').length == 0 || $('#request_custom_fields_19625700397588').val() == ''){
+		$('.request_custom_fields_19625700397588').hide();
+    }
+ }
+  })
+//show or hide appeal link 5 field based on link 4 content
+  $('#request_custom_fields_19625700397588').keyup(function() {
+  if($('#request_custom_fields_19625700397588').length > 0 && $('#request_custom_fields_19625700397588').val() != ''){
+		$('.request_custom_fields_19625755462548').show();
+ }
+  })
+   $('#request_custom_fields_19625700397588').keyup(function() {
+  if($('#request_custom_fields_19625700397588').length == 0 || $('#request_custom_fields_19625700397588').val() == ''){
+		if($('#request_custom_fields_19625755462548').length > 0 && $('#request_custom_fields_19625755462548').val() != ''){
+		$('.request_custom_fields_19625755462548').show();
+ }
+    if($('#request_custom_fields_19625755462548').length == 0 || $('#request_custom_fields_19625755462548').val() == ''){
+		$('.request_custom_fields_19625755462548').hide();
+ }
+ }
+  })
+//show or hide appeal link 6 field based on link 5 content
+  $('#request_custom_fields_19625755462548').keyup(function() {
+  if($('#request_custom_fields_19625755462548').length > 0 && $('#request_custom_fields_19625755462548').val() != ''){
+		$('.request_custom_fields_19625769707284').show();
+ }
+  })
+   $('#request_custom_fields_19625755462548').keyup(function() {
+  if($('#request_custom_fields_19625755462548').length == 0 || $('#request_custom_fields_19625755462548').val() == ''){
+		if($('#request_custom_fields_19625769707284').length > 0 && $('#request_custom_fields_19625769707284').val() != ''){
+		$('.request_custom_fields_19625769707284').show();
+ }
+    if($('#request_custom_fields_19625769707284').length == 0 || $('#request_custom_fields_19625769707284').val() == ''){
+		$('.request_custom_fields_19625769707284').hide();
+ }
+ }
+  })
+//show or hide appeal link 7 field based on link 6 content
+  $('#request_custom_fields_19625769707284').keyup(function() {
+  if($('#request_custom_fields_19625769707284').length > 0 && $('#request_custom_fields_19625769707284').val() != ''){
+		$('.request_custom_fields_19625770512788').show();
+ }
+  })
+   $('#request_custom_fields_19625769707284').keyup(function() {
+  if($('#request_custom_fields_19625769707284').length == 0 || $('#request_custom_fields_19625769707284').val() == ''){
+		if($('#request_custom_fields_19625770512788').length > 0 && $('#request_custom_fields_19625770512788').val() != ''){
+		$('.request_custom_fields_19625770512788').show();
+ }
+    if($('#request_custom_fields_19625770512788').length == 0 || $('#request_custom_fields_19625770512788').val() == ''){
+		$('.request_custom_fields_19625770512788').hide();
+ }
+ }
+  })
+//show or hide appeal link 8 field based on link 7 content
+  $('#request_custom_fields_19625770512788').keyup(function() {
+  if($('#request_custom_fields_19625770512788').length > 0 && $('#request_custom_fields_19625770512788').val() != ''){
+		$('.request_custom_fields_19625750261524').show();
+ }
+  })
+   $('#request_custom_fields_19625770512788').keyup(function() {
+  if($('#request_custom_fields_19625770512788').length == 0 || $('#request_custom_fields_19625770512788').val() == ''){
+		if($('#request_custom_fields_19625750261524').length > 0 && $('#request_custom_fields_19625750261524').val() != ''){
+		$('.request_custom_fields_19625750261524').show();
+ }
+    if($('#request_custom_fields_19625750261524').length == 0 || $('#request_custom_fields_19625750261524').val() == ''){
+		$('.request_custom_fields_19625750261524').hide();
+ }
+ }
+  })
+//show or hide appeal link 9 field based on link 8 content
+  $('#request_custom_fields_19625750261524').keyup(function() {
+  if($('#request_custom_fields_19625750261524').length > 0 && $('#request_custom_fields_19625750261524').val() != ''){
+		$('.request_custom_fields_19625767208340').show();
+ }
+  })
+   $('#request_custom_fields_19625750261524').keyup(function() {
+  if($('#request_custom_fields_19625750261524').length == 0 || $('#request_custom_fields_19625750261524').val() == ''){
+				if($('#request_custom_fields_19625767208340').length > 0 && $('#request_custom_fields_19625767208340').val() != ''){
+		$('.request_custom_fields_19625767208340').show();
+ }
+    if($('#request_custom_fields_19625767208340').length == 0 || $('#request_custom_fields_19625767208340').val() == ''){
+		$('.request_custom_fields_19625767208340').hide();
+ }
+ }
+  })
+//show or hide appeal link 10 field based on link 9 content
+  $('#request_custom_fields_19625767208340').keyup(function() {
+  if($('#request_custom_fields_19625767208340').length > 0 && $('#request_custom_fields_19625767208340').val() != ''){
+		$('.request_custom_fields_19625803545364').show();
+ }
+  })
+   $('#request_custom_fields_19625767208340').keyup(function() {
+  if($('#request_custom_fields_19625767208340').length == 0 || $('#request_custom_fields_19625767208340').val() == ''){
+						if($('#request_custom_fields_19625803545364').length > 0 && $('#request_custom_fields_19625803545364').val() != ''){
+		$('.request_custom_fields_19625803545364').show();
+ }
+    if($('#request_custom_fields_19625803545364').length == 0 || $('#request_custom_fields_19625803545364').val() == ''){
+		$('.request_custom_fields_19625803545364').hide();
+ }
+ }
+  })
+
+// display correct tip on Appeal a Decision to Restrict Access to Your Content Form
+var selected = $('#request_issue_type_select option:selected').val();
+if (selected == "19626896375572") {
+$('div.lt-new-request-tip_info').hide();
+$('div.dsa_geo_appeal_tip').show();
+  $('.request_custom_fields_19625698843924').hide();
+  $('.request_custom_fields_19625699552532').hide();
+  $('.request_custom_fields_19625700397588').hide();
+  $('.request_custom_fields_19625755462548').hide();
+  $('.request_custom_fields_19625769707284').hide();
+  $('.request_custom_fields_19625770512788').hide();
+  $('.request_custom_fields_19625750261524').hide();
+  $('.request_custom_fields_19625767208340').hide();
+  $('.request_custom_fields_19625803545364').hide();
+  $('.form-field.request_subject').hide(); // Hide subject
+	$('#request_subject').val('Appeal a Decision to Restrict Access to Your Content'); // autofill subject
+	$('#dsa_appeal_details').show();
+	$('label[for=request_description]').html("");
+  $('label[for=request_description]').append(dsa_appeal_details);
+ 	$('#dsa_appeal_atts').show();
+  $('label[for=request-attachments]').html("");
+  $('label[for=request-attachments]').append(dsa_appeal_atts);
+  $('.request_custom_fields_19625657760532').hide();
+  }
+
+function applyAccessRestrictionAppealInitialState() {
+  if ($('#request_issue_type_select').val() == "19626896375572") {
+    $('.form-field.request_subject').hide();
+    $('#request_subject').val('Appeal a Decision to Restrict Access to Your Content');
+  }
+}
+
+applyAccessRestrictionAppealInitialState();
+setTimeout(applyAccessRestrictionAppealInitialState, 250);
+setTimeout(applyAccessRestrictionAppealInitialState, 1000);
+setTimeout(applyAccessRestrictionAppealInitialState, 1500);
+
+//show or hide appeal link 2 field based on link 1 content
+  $('#request_custom_fields_19625697606804').keyup(function() {
+  if($('#request_custom_fields_19625697606804').length > 0 && $('#request_custom_fields_19625697606804').val() != ''){
+		$('.request_custom_fields_19625698843924').show();
+ }
+  })
+   $('#request_custom_fields_19625697606804').keyup(function() {
+  if($('#request_custom_fields_19625697606804').length == 0 || $('#request_custom_fields_19625697606804').val() == ''){
+		if($('#request_custom_fields_19625698843924').length == 0 || $('#request_custom_fields_19625698843924').val() == ''){
+    $('.request_custom_fields_19625698843924').hide();
+    }
+    if($('#request_custom_fields_19625698843924').length > 0 && $('#request_custom_fields_19625698843924').val() != ''){
+		$('.request_custom_fields_19625698843924').show();
+ }
+ }
+  })
+//show or hide appeal link 3 field based on link 2 content
+  $('#request_custom_fields_19625698843924').keyup(function() {
+  if($('#request_custom_fields_19625698843924').length > 0 && $('#request_custom_fields_19625698843924').val() != ''){
+		$('.request_custom_fields_19625699552532').show();
+ }
+  })
+   $('#request_custom_fields_19625698843924').keyup(function() {
+  if($('#request_custom_fields_19625698843924').length == 0 || $('#request_custom_fields_19625698843924').val() == ''){
+		if($('#request_custom_fields_19625699552532').length == 0 || $('#request_custom_fields_19625699552532').val() == ''){
+		$('.request_custom_fields_19625699552532').hide();
+    }
+    if($('#request_custom_fields_19625699552532').length > 0 && $('#request_custom_fields_19625699552532').val() != ''){
+		$('.request_custom_fields_19625699552532').show();
+ }
+ }
+  })
+//show or hide appeal link 4 field based on link 3 content
+  $('#request_custom_fields_19625699552532').keyup(function() {
+  if($('#request_custom_fields_19625699552532').length > 0 && $('#request_custom_fields_19625699552532').val() != ''){
+		$('.request_custom_fields_19625700397588').show();
+ }
+  })
+   $('#request_custom_fields_19625699552532').keyup(function() {
+  if($('#request_custom_fields_19625699552532').length == 0 || $('#request_custom_fields_19625699552532').val() == ''){
+		if($('#request_custom_fields_19625700397588').length > 0 && $('#request_custom_fields_19625700397588').val() != ''){
+		$('.request_custom_fields_19625700397588').show();
+ }
+    if($('#request_custom_fields_19625700397588').length == 0 || $('#request_custom_fields_19625700397588').val() == ''){
+		$('.request_custom_fields_19625700397588').hide();
+    }
+ }
+  })
+//show or hide appeal link 5 field based on link 4 content
+  $('#request_custom_fields_19625700397588').keyup(function() {
+  if($('#request_custom_fields_19625700397588').length > 0 && $('#request_custom_fields_19625700397588').val() != ''){
+		$('.request_custom_fields_19625755462548').show();
+ }
+  })
+   $('#request_custom_fields_19625700397588').keyup(function() {
+  if($('#request_custom_fields_19625700397588').length == 0 || $('#request_custom_fields_19625700397588').val() == ''){
+		if($('#request_custom_fields_19625755462548').length > 0 && $('#request_custom_fields_19625755462548').val() != ''){
+		$('.request_custom_fields_19625755462548').show();
+ }
+    if($('#request_custom_fields_19625755462548').length == 0 || $('#request_custom_fields_19625755462548').val() == ''){
+		$('.request_custom_fields_19625755462548').hide();
+ }
+ }
+  })
+//show or hide appeal link 6 field based on link 5 content
+  $('#request_custom_fields_19625755462548').keyup(function() {
+  if($('#request_custom_fields_19625755462548').length > 0 && $('#request_custom_fields_19625755462548').val() != ''){
+		$('.request_custom_fields_19625769707284').show();
+ }
+  })
+   $('#request_custom_fields_19625755462548').keyup(function() {
+  if($('#request_custom_fields_19625755462548').length == 0 || $('#request_custom_fields_19625755462548').val() == ''){
+		if($('#request_custom_fields_19625769707284').length > 0 && $('#request_custom_fields_19625769707284').val() != ''){
+		$('.request_custom_fields_19625769707284').show();
+ }
+    if($('#request_custom_fields_19625769707284').length == 0 || $('#request_custom_fields_19625769707284').val() == ''){
+		$('.request_custom_fields_19625769707284').hide();
+ }
+ }
+  })
+//show or hide appeal link 7 field based on link 6 content
+  $('#request_custom_fields_19625769707284').keyup(function() {
+  if($('#request_custom_fields_19625769707284').length > 0 && $('#request_custom_fields_19625769707284').val() != ''){
+		$('.request_custom_fields_19625770512788').show();
+ }
+  })
+   $('#request_custom_fields_19625769707284').keyup(function() {
+  if($('#request_custom_fields_19625769707284').length == 0 || $('#request_custom_fields_19625769707284').val() == ''){
+		if($('#request_custom_fields_19625770512788').length > 0 && $('#request_custom_fields_19625770512788').val() != ''){
+		$('.request_custom_fields_19625770512788').show();
+ }
+    if($('#request_custom_fields_19625770512788').length == 0 || $('#request_custom_fields_19625770512788').val() == ''){
+		$('.request_custom_fields_19625770512788').hide();
+ }
+ }
+  })
+//show or hide appeal link 8 field based on link 7 content
+  $('#request_custom_fields_19625770512788').keyup(function() {
+  if($('#request_custom_fields_19625770512788').length > 0 && $('#request_custom_fields_19625770512788').val() != ''){
+		$('.request_custom_fields_19625750261524').show();
+ }
+  })
+   $('#request_custom_fields_19625770512788').keyup(function() {
+  if($('#request_custom_fields_19625770512788').length == 0 || $('#request_custom_fields_19625770512788').val() == ''){
+		if($('#request_custom_fields_19625750261524').length > 0 && $('#request_custom_fields_19625750261524').val() != ''){
+		$('.request_custom_fields_19625750261524').show();
+ }
+    if($('#request_custom_fields_19625750261524').length == 0 || $('#request_custom_fields_19625750261524').val() == ''){
+		$('.request_custom_fields_19625750261524').hide();
+ }
+ }
+  })
+//show or hide appeal link 9 field based on link 8 content
+  $('#request_custom_fields_19625750261524').keyup(function() {
+  if($('#request_custom_fields_19625750261524').length > 0 && $('#request_custom_fields_19625750261524').val() != ''){
+		$('.request_custom_fields_19625767208340').show();
+ }
+  })
+   $('#request_custom_fields_19625750261524').keyup(function() {
+  if($('#request_custom_fields_19625750261524').length == 0 || $('#request_custom_fields_19625750261524').val() == ''){
+				if($('#request_custom_fields_19625767208340').length > 0 && $('#request_custom_fields_19625767208340').val() != ''){
+		$('.request_custom_fields_19625767208340').show();
+ }
+    if($('#request_custom_fields_19625767208340').length == 0 || $('#request_custom_fields_19625767208340').val() == ''){
+		$('.request_custom_fields_19625767208340').hide();
+ }
+ }
+  })
+//show or hide appeal link 10 field based on link 9 content
+  $('#request_custom_fields_19625767208340').keyup(function() {
+  if($('#request_custom_fields_19625767208340').length > 0 && $('#request_custom_fields_19625767208340').val() != ''){
+		$('.request_custom_fields_19625803545364').show();
+ }
+  })
+   $('#request_custom_fields_19625767208340').keyup(function() {
+  if($('#request_custom_fields_19625767208340').length == 0 || $('#request_custom_fields_19625767208340').val() == ''){
+						if($('#request_custom_fields_19625803545364').length > 0 && $('#request_custom_fields_19625803545364').val() != ''){
+		$('.request_custom_fields_19625803545364').show();
+ }
+    if($('#request_custom_fields_19625803545364').length == 0 || $('#request_custom_fields_19625803545364').val() == ''){
+		$('.request_custom_fields_19625803545364').hide();
+ }
+ }
+  })
+
+$("#request_custom_fields_19616701243284").on("change", function() {
+  var selected = $(this).val();
+
+if (selected === "dsa_counterfeit_goods"||selected === "dsa_copyright_infringement"||selected === "dsa_trademark_infringement") {
+  // Hide details of inquiry
+    $('label[for=request_description]').html("Details of inquiry");
+  $('label[for=request-attachments]').html("Attachments");
+   } else {
+    // If other options are selected, show the hidden fields again
+   //$('label[for=request_description]').html("");
+   $('label[for=request_description]').html($('#dsa_report_details').html());
+   //$('label[for=request-attachments]').html("");
+   $('label[for=request-attachments]').html($('#dsa_report_atts').html());
+  }
+}).trigger('change'); // Trigger the change event on page load
+
+//$("#request_custom_fields_16510589022228").on("change", function() {
+//var selected = $('#request_custom_fields_16510589022228').val();
+//if (selected === "contact_form_trademark_request") {
+//$('#request_description').parent().append(tm_des_hint);
+//$('.form-field.request_subject').hide(); // Hide subject
+//}  
+//else {
+ // $('#disclaimer').remove();
+ // ('.form-field.request_subject').show(); // Un-Hide subject
+//  $('#request_subject').val('');
+//}
+//})
+
+$('#request_custom_fields_24334943').keyup(function() {
+		$('#request_subject').val($('#request_custom_fields_24334943').val());
+  })
+
+//Terms and Legal Inquiries
+
+var selected = $('#request_issue_type_select option:selected').val();
+if (selected == "20794104097300") {
+  $('div.request_custom_fields_20794054146452').append(terms_inq_hint);
+  $('div.request_custom_fields_35621129396500').append(osa_no_disc);
+  $('#terms_inq_hint').show();
+  $('#osa_no_disc').show();
+}
+
+$("#request_custom_fields_21549356702612").on("change", function() {
+  var selected = $(this).val();
+if (selected === "australia_-_social_media_services_online_safety_code_inquiries") {
+ 
+  $('label[for=request_description]').html("");
+  $('label[for=request_description]').append("Details of inquiry or complaint");
+  $('label[for=request_subject]').html("");
+  $('label[for=request_subject]').append("Subject of inquiry or complaint");
+  }
+}).trigger('change');
+
+
+
+$("#request_custom_fields_21549356702612").on("change", function() {
+  var selected = $(this).val();
+
+  // Condition 1: UK
+  if (selected === "united_kingdom_online_safety_act") {
+    $('.form-field.request_subject').hide(); 
+    $('#request_subject').val('Terms OSA Request');
+      
+
+  // Condition 2: Australia
+  } else if (selected === "australia_-_social_media_minimum_age_inquiries_or_complaints") {
+    $('.form-field.request_subject').hide(); 
+    $('#request_subject').val('AU Age Verification Request');
+    
+    // Update Labels
+    $('label[for=request_description]').text("Details of inquiry or complaint");
+    $('label[for=request_subject]').text("Subject of inquiry or complaint");
+// Brazil
+  } else if (selected === "brazil_eca") {
+    $('.form-field.request_subject').hide(); 
+    $('#request_subject').val('Terms ECA Request');
+    eca_terms_hint = '<div id="eca_terms_hint">' + document.getElementById('eca_term_hinta').innerHTML + '</div>';
+    if ($('#eca_terms_hint').length === 0) {
+        $('.request_custom_fields_47051431425812').after(eca_terms_hint);
+    }
+    $('#eca_terms_hint').show();
+    //eu
+    } else if (selected === "european_union_-_digital_services_act_inquiries") {
+ 
+		$('.form-field.request_subject').hide(); 
+    $('#request_subject').val('Terms DSA Request');
+  // Condition 3: Everything else (Default)
+  } else {
+    $('.form-field.request_subject').show(); 
+    $('#request_subject').val('');
+    $('#eca_terms_hint').hide();
+  }
+}).trigger('change');
+
+
+$("#request_custom_fields_49961314893844").on("change", function() {
+  var selected = $(this).val();
+if (selected === "dsa_general_inquiry") {
+  $('#request-attachments').closest('.form-field').show();
+} else {
+  $('#request-attachments').closest('.form-field').hide();
+  }
+}).trigger('change');
+
+//Article Feedback
+var articleId = window.location.pathname.split('/');
+if(articleId != '') {
+  
+  var lastEl = articleId.pop();
+  console.log(lastEl)
+  $('.article_field').val(lastEl);
+  $('.article_field2').val(window.location);
+}
+
+$('#article_feedback').submit(function (e) {
+    var dataString = $(this).serialize();
+    e.preventDefault();
+    // alert(dataString); return false; 
+    $.ajax({
+      type: "GET",
+      url: "https://prod.enterprise-engineering.workato-apim-custom.snooguts.net/zendesk-api-v0-1/afb",
+      data: dataString,
+      beforeSend: function (xhr) {
+            xhr.setRequestHeader('Authorization', 'Basic '+ btoa('api-token:cf11c603aef48a7756f1131d024176613b81d504da027903902e33738d90e8a6'));
+},
+      success: function () {
+        $("#article_feedback").hide();
+        $("#feedback_s").show();
+        $("#feedback_m").hide();
+      },
+      error: function(XMLHttpRequest, textStatus, errorThrown) { 
+        $("#article_feedback").hide();
+        $("#feedback_s").show();
+        $("#feedback_m").hide();
+    }       
+    });
+    
+  });
+
+
+document.addEventListener("DOMContentLoaded", () => {
+if (document.querySelector(".lt-article-vote__controls")) {
+    const voteButtons = document.querySelectorAll(".lt-article-vote__item");
+    const voteMessage = document.querySelector(".feedback_form");
+    const voteMessage2 = document.querySelector(".feedback_m");
+
+    voteButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        let isDownButton = button.matches(".lt-article-vote__item--down");
+        let isPressed = button.matches(".lt-article-vote__item--voted");
+
+        if (isDownButton && !isPressed) {
+          voteMessage.style.display = "block";
+          voteMessage2.style.display = "block";
+        } else {
+          voteMessage.style.display = "none";
+          voteMessage2.style.display = "none";
+        }
+      });
+    });
+  }
+});
+
+var selected = $('#request_issue_type_select option:selected').val();
+if (selected == "20794104097300") {
+$('div.lt-new-request-tip_info').hide();
+$('div.tos_tip').show();
+$('div.request_ticket_form_id').hide();
+}
+
+// display correct tip on Appeals Form for Users Impacted by Counterfeit Removals Form
+var selected = $('#request_issue_type_select option:selected').val();
+if (selected == "21309030504724") {
+$('div.lt-new-request-tip_info').hide();
+
+  $('.request_custom_fields_19625698843924').hide();
+  $('.request_custom_fields_19625699552532').hide();
+  $('.request_custom_fields_19625700397588').hide();
+  $('.request_custom_fields_19625755462548').hide();
+  $('.request_custom_fields_19625769707284').hide();
+  $('.request_custom_fields_19625770512788').hide();
+  $('.request_custom_fields_19625750261524').hide();
+  $('.request_custom_fields_19625767208340').hide();
+  $('.request_custom_fields_19625803545364').hide();
+  $('.form-field.request_subject').hide(); // Hide subject
+	$('#request_subject').val('Appeals Form for Users Impacted by Counterfeit Removals'); // autofill subject
+	$('#dsa_appeal_details').show();
+	$('label[for=request_description]').html("");
+  $('label[for=request_description]').append(dsa_appeal_details);
+ 	$('#dsa_appeal_atts').show();
+  $('label[for=request-attachments]').html("");
+  $('label[for=request-attachments]').append(dsa_appeal_atts);
+  $('.request_custom_fields_19625657760532').hide();
+  }
+
+//show or hide appeal link 2 field based on link 1 content
+  $('#request_custom_fields_19625697606804').keyup(function() {
+  if($('#request_custom_fields_19625697606804').length > 0 && $('#request_custom_fields_19625697606804').val() != ''){
+		$('.request_custom_fields_19625698843924').show();
+ }
+  })
+   $('#request_custom_fields_19625697606804').keyup(function() {
+  if($('#request_custom_fields_19625697606804').length == 0 || $('#request_custom_fields_19625697606804').val() == ''){
+		if($('#request_custom_fields_19625698843924').length == 0 || $('#request_custom_fields_19625698843924').val() == ''){
+    $('.request_custom_fields_19625698843924').hide();
+    }
+    if($('#request_custom_fields_19625698843924').length > 0 && $('#request_custom_fields_19625698843924').val() != ''){
+		$('.request_custom_fields_19625698843924').show();
+ }
+ }
+  })
+//show or hide appeal link 3 field based on link 2 content
+  $('#request_custom_fields_19625698843924').keyup(function() {
+  if($('#request_custom_fields_19625698843924').length > 0 && $('#request_custom_fields_19625698843924').val() != ''){
+		$('.request_custom_fields_19625699552532').show();
+ }
+  })
+   $('#request_custom_fields_19625698843924').keyup(function() {
+  if($('#request_custom_fields_19625698843924').length == 0 || $('#request_custom_fields_19625698843924').val() == ''){
+		if($('#request_custom_fields_19625699552532').length == 0 || $('#request_custom_fields_19625699552532').val() == ''){
+		$('.request_custom_fields_19625699552532').hide();
+    }
+    if($('#request_custom_fields_19625699552532').length > 0 && $('#request_custom_fields_19625699552532').val() != ''){
+		$('.request_custom_fields_19625699552532').show();
+ }
+ }
+  })
+//show or hide appeal link 4 field based on link 3 content
+  $('#request_custom_fields_19625699552532').keyup(function() {
+  if($('#request_custom_fields_19625699552532').length > 0 && $('#request_custom_fields_19625699552532').val() != ''){
+		$('.request_custom_fields_19625700397588').show();
+ }
+  })
+   $('#request_custom_fields_19625699552532').keyup(function() {
+  if($('#request_custom_fields_19625699552532').length == 0 || $('#request_custom_fields_19625699552532').val() == ''){
+		if($('#request_custom_fields_19625700397588').length > 0 && $('#request_custom_fields_19625700397588').val() != ''){
+		$('.request_custom_fields_19625700397588').show();
+ }
+    if($('#request_custom_fields_19625700397588').length == 0 || $('#request_custom_fields_19625700397588').val() == ''){
+		$('.request_custom_fields_19625700397588').hide();
+    }
+ }
+  })
+//show or hide appeal link 5 field based on link 4 content
+  $('#request_custom_fields_19625700397588').keyup(function() {
+  if($('#request_custom_fields_19625700397588').length > 0 && $('#request_custom_fields_19625700397588').val() != ''){
+		$('.request_custom_fields_19625755462548').show();
+ }
+  })
+   $('#request_custom_fields_19625700397588').keyup(function() {
+  if($('#request_custom_fields_19625700397588').length == 0 || $('#request_custom_fields_19625700397588').val() == ''){
+		if($('#request_custom_fields_19625755462548').length > 0 && $('#request_custom_fields_19625755462548').val() != ''){
+		$('.request_custom_fields_19625755462548').show();
+ }
+    if($('#request_custom_fields_19625755462548').length == 0 || $('#request_custom_fields_19625755462548').val() == ''){
+		$('.request_custom_fields_19625755462548').hide();
+ }
+ }
+  })
+//show or hide appeal link 6 field based on link 5 content
+  $('#request_custom_fields_19625755462548').keyup(function() {
+  if($('#request_custom_fields_19625755462548').length > 0 && $('#request_custom_fields_19625755462548').val() != ''){
+		$('.request_custom_fields_19625769707284').show();
+ }
+  })
+   $('#request_custom_fields_19625755462548').keyup(function() {
+  if($('#request_custom_fields_19625755462548').length == 0 || $('#request_custom_fields_19625755462548').val() == ''){
+		if($('#request_custom_fields_19625769707284').length > 0 && $('#request_custom_fields_19625769707284').val() != ''){
+		$('.request_custom_fields_19625769707284').show();
+ }
+    if($('#request_custom_fields_19625769707284').length == 0 || $('#request_custom_fields_19625769707284').val() == ''){
+		$('.request_custom_fields_19625769707284').hide();
+ }
+ }
+  })
+//show or hide appeal link 7 field based on link 6 content
+  $('#request_custom_fields_19625769707284').keyup(function() {
+  if($('#request_custom_fields_19625769707284').length > 0 && $('#request_custom_fields_19625769707284').val() != ''){
+		$('.request_custom_fields_19625770512788').show();
+ }
+  })
+   $('#request_custom_fields_19625769707284').keyup(function() {
+  if($('#request_custom_fields_19625769707284').length == 0 || $('#request_custom_fields_19625769707284').val() == ''){
+		if($('#request_custom_fields_19625770512788').length > 0 && $('#request_custom_fields_19625770512788').val() != ''){
+		$('.request_custom_fields_19625770512788').show();
+ }
+    if($('#request_custom_fields_19625770512788').length == 0 || $('#request_custom_fields_19625770512788').val() == ''){
+		$('.request_custom_fields_19625770512788').hide();
+ }
+ }
+  })
+//show or hide appeal link 8 field based on link 7 content
+  $('#request_custom_fields_19625770512788').keyup(function() {
+  if($('#request_custom_fields_19625770512788').length > 0 && $('#request_custom_fields_19625770512788').val() != ''){
+		$('.request_custom_fields_19625750261524').show();
+ }
+  })
+   $('#request_custom_fields_19625770512788').keyup(function() {
+  if($('#request_custom_fields_19625770512788').length == 0 || $('#request_custom_fields_19625770512788').val() == ''){
+		if($('#request_custom_fields_19625750261524').length > 0 && $('#request_custom_fields_19625750261524').val() != ''){
+		$('.request_custom_fields_19625750261524').show();
+ }
+    if($('#request_custom_fields_19625750261524').length == 0 || $('#request_custom_fields_19625750261524').val() == ''){
+		$('.request_custom_fields_19625750261524').hide();
+ }
+ }
+  })
+//show or hide appeal link 9 field based on link 8 content
+  $('#request_custom_fields_19625750261524').keyup(function() {
+  if($('#request_custom_fields_19625750261524').length > 0 && $('#request_custom_fields_19625750261524').val() != ''){
+		$('.request_custom_fields_19625767208340').show();
+ }
+  })
+   $('#request_custom_fields_19625750261524').keyup(function() {
+  if($('#request_custom_fields_19625750261524').length == 0 || $('#request_custom_fields_19625750261524').val() == ''){
+				if($('#request_custom_fields_19625767208340').length > 0 && $('#request_custom_fields_19625767208340').val() != ''){
+		$('.request_custom_fields_19625767208340').show();
+ }
+    if($('#request_custom_fields_19625767208340').length == 0 || $('#request_custom_fields_19625767208340').val() == ''){
+		$('.request_custom_fields_19625767208340').hide();
+ }
+ }
+  })
+//show or hide appeal link 10 field based on link 9 content
+  $('#request_custom_fields_19625767208340').keyup(function() {
+  if($('#request_custom_fields_19625767208340').length > 0 && $('#request_custom_fields_19625767208340').val() != ''){
+		$('.request_custom_fields_19625803545364').show();
+ }
+  })
+   $('#request_custom_fields_19625767208340').keyup(function() {
+  if($('#request_custom_fields_19625767208340').length == 0 || $('#request_custom_fields_19625767208340').val() == ''){
+						if($('#request_custom_fields_19625803545364').length > 0 && $('#request_custom_fields_19625803545364').val() != ''){
+		$('.request_custom_fields_19625803545364').show();
+ }
+    if($('#request_custom_fields_19625803545364').length == 0 || $('#request_custom_fields_19625803545364').val() == ''){
+		$('.request_custom_fields_19625803545364').hide();
+ }
+ }
+  })
+
+// display correct Attachments language for Reddit pro, hid subject and description, change label for anonemail field
+var selected = $('#request_issue_type_select option:selected').val();
+if (selected == "23665100389524") {
+$('label[for=request-attachments]').html("Please attach a document identifying the business or your connection to the business e.g. Trademark registration certificate, Articles of incorporation");
+$('.form-field.request_subject').hide(); // Hide subject
+  $('#request_subject').val('Reddit Pro Brand Insights Application'); // autofill subject
+  $('.form-field.request_description').hide(); // Hide description
+  $('#request_description').val('Reddit Pro Brand Insights Application'); // autofill description
+  $('label[for=request_anonymous_requester_email]').html("What is the email address connected to your reddit account?");
+}
+
+function applyRedditProBrandInsightsInitialState() {
+  if ($('#request_issue_type_select').val() == "23665100389524") {
+    $('.form-field.request_subject').hide();
+    $('#request_subject').val('Reddit Pro Brand Insights Application');
+    $('.form-field.request_description').hide();
+    $('#request_description').val('Reddit Pro Brand Insights Application');
+  }
+}
+
+applyRedditProBrandInsightsInitialState();
+setTimeout(applyRedditProBrandInsightsInitialState, 250);
+setTimeout(applyRedditProBrandInsightsInitialState, 1000);
+setTimeout(applyRedditProBrandInsightsInitialState, 1500);
+
+// display correct tip on Appeals Form for Users Impacted by Trademark Removals Form
+var selected = $('#request_issue_type_select option:selected').val();
+if (selected == "21309112061076") {
+$('div.lt-new-request-tip_info').hide();
+
+  $('.request_custom_fields_19625698843924').hide();
+  $('.request_custom_fields_19625699552532').hide();
+  $('.request_custom_fields_19625700397588').hide();
+  $('.request_custom_fields_19625755462548').hide();
+  $('.request_custom_fields_19625769707284').hide();
+  $('.request_custom_fields_19625770512788').hide();
+  $('.request_custom_fields_19625750261524').hide();
+  $('.request_custom_fields_19625767208340').hide();
+  $('.request_custom_fields_19625803545364').hide();
+  $('.form-field.request_subject').hide(); // Hide subject
+	$('#request_subject').val('Appeals Form for Users Impacted by Trademark Removals'); // autofill subject
+	$('#dsa_appeal_details').show();
+	$('label[for=request_description]').html("");
+  $('label[for=request_description]').append(dsa_appeal_details);
+ 	$('#dsa_appeal_atts').show();
+  $('label[for=request-attachments]').html("");
+  $('label[for=request-attachments]').append(dsa_appeal_atts);
+  $('.request_custom_fields_19625657760532').hide();
+  }
+
+function applyTrademarkRemovalAppealInitialState() {
+  if ($('#request_issue_type_select').val() == "21309112061076") {
+    $('.form-field.request_subject').hide();
+    $('#request_subject').val('Appeals Form for Users Impacted by Trademark Removals');
+  }
+}
+
+applyTrademarkRemovalAppealInitialState();
+setTimeout(applyTrademarkRemovalAppealInitialState, 250);
+setTimeout(applyTrademarkRemovalAppealInitialState, 1000);
+setTimeout(applyTrademarkRemovalAppealInitialState, 1500);
+
+//show or hide appeal link 2 field based on link 1 content
+  $('#request_custom_fields_19625697606804').keyup(function() {
+  if($('#request_custom_fields_19625697606804').length > 0 && $('#request_custom_fields_19625697606804').val() != ''){
+		$('.request_custom_fields_19625698843924').show();
+ }
+  })
+   $('#request_custom_fields_19625697606804').keyup(function() {
+  if($('#request_custom_fields_19625697606804').length == 0 || $('#request_custom_fields_19625697606804').val() == ''){
+		if($('#request_custom_fields_19625698843924').length == 0 || $('#request_custom_fields_19625698843924').val() == ''){
+    $('.request_custom_fields_19625698843924').hide();
+    }
+    if($('#request_custom_fields_19625698843924').length > 0 && $('#request_custom_fields_19625698843924').val() != ''){
+		$('.request_custom_fields_19625698843924').show();
+ }
+ }
+  })
+//show or hide appeal link 3 field based on link 2 content
+  $('#request_custom_fields_19625698843924').keyup(function() {
+  if($('#request_custom_fields_19625698843924').length > 0 && $('#request_custom_fields_19625698843924').val() != ''){
+		$('.request_custom_fields_19625699552532').show();
+ }
+  })
+   $('#request_custom_fields_19625698843924').keyup(function() {
+  if($('#request_custom_fields_19625698843924').length == 0 || $('#request_custom_fields_19625698843924').val() == ''){
+		if($('#request_custom_fields_19625699552532').length == 0 || $('#request_custom_fields_19625699552532').val() == ''){
+		$('.request_custom_fields_19625699552532').hide();
+    }
+    if($('#request_custom_fields_19625699552532').length > 0 && $('#request_custom_fields_19625699552532').val() != ''){
+		$('.request_custom_fields_19625699552532').show();
+ }
+ }
+  })
+//show or hide appeal link 4 field based on link 3 content
+  $('#request_custom_fields_19625699552532').keyup(function() {
+  if($('#request_custom_fields_19625699552532').length > 0 && $('#request_custom_fields_19625699552532').val() != ''){
+		$('.request_custom_fields_19625700397588').show();
+ }
+  })
+   $('#request_custom_fields_19625699552532').keyup(function() {
+  if($('#request_custom_fields_19625699552532').length == 0 || $('#request_custom_fields_19625699552532').val() == ''){
+		if($('#request_custom_fields_19625700397588').length > 0 && $('#request_custom_fields_19625700397588').val() != ''){
+		$('.request_custom_fields_19625700397588').show();
+ }
+    if($('#request_custom_fields_19625700397588').length == 0 || $('#request_custom_fields_19625700397588').val() == ''){
+		$('.request_custom_fields_19625700397588').hide();
+    }
+ }
+  })
+//show or hide appeal link 5 field based on link 4 content
+  $('#request_custom_fields_19625700397588').keyup(function() {
+  if($('#request_custom_fields_19625700397588').length > 0 && $('#request_custom_fields_19625700397588').val() != ''){
+		$('.request_custom_fields_19625755462548').show();
+ }
+  })
+   $('#request_custom_fields_19625700397588').keyup(function() {
+  if($('#request_custom_fields_19625700397588').length == 0 || $('#request_custom_fields_19625700397588').val() == ''){
+		if($('#request_custom_fields_19625755462548').length > 0 && $('#request_custom_fields_19625755462548').val() != ''){
+		$('.request_custom_fields_19625755462548').show();
+ }
+    if($('#request_custom_fields_19625755462548').length == 0 || $('#request_custom_fields_19625755462548').val() == ''){
+		$('.request_custom_fields_19625755462548').hide();
+ }
+ }
+  })
+//show or hide appeal link 6 field based on link 5 content
+  $('#request_custom_fields_19625755462548').keyup(function() {
+  if($('#request_custom_fields_19625755462548').length > 0 && $('#request_custom_fields_19625755462548').val() != ''){
+		$('.request_custom_fields_19625769707284').show();
+ }
+  })
+   $('#request_custom_fields_19625755462548').keyup(function() {
+  if($('#request_custom_fields_19625755462548').length == 0 || $('#request_custom_fields_19625755462548').val() == ''){
+		if($('#request_custom_fields_19625769707284').length > 0 && $('#request_custom_fields_19625769707284').val() != ''){
+		$('.request_custom_fields_19625769707284').show();
+ }
+    if($('#request_custom_fields_19625769707284').length == 0 || $('#request_custom_fields_19625769707284').val() == ''){
+		$('.request_custom_fields_19625769707284').hide();
+ }
+ }
+  })
+//show or hide appeal link 7 field based on link 6 content
+  $('#request_custom_fields_19625769707284').keyup(function() {
+  if($('#request_custom_fields_19625769707284').length > 0 && $('#request_custom_fields_19625769707284').val() != ''){
+		$('.request_custom_fields_19625770512788').show();
+ }
+  })
+   $('#request_custom_fields_19625769707284').keyup(function() {
+  if($('#request_custom_fields_19625769707284').length == 0 || $('#request_custom_fields_19625769707284').val() == ''){
+		if($('#request_custom_fields_19625770512788').length > 0 && $('#request_custom_fields_19625770512788').val() != ''){
+		$('.request_custom_fields_19625770512788').show();
+ }
+    if($('#request_custom_fields_19625770512788').length == 0 || $('#request_custom_fields_19625770512788').val() == ''){
+		$('.request_custom_fields_19625770512788').hide();
+ }
+ }
+  })
+//show or hide appeal link 8 field based on link 7 content
+  $('#request_custom_fields_19625770512788').keyup(function() {
+  if($('#request_custom_fields_19625770512788').length > 0 && $('#request_custom_fields_19625770512788').val() != ''){
+		$('.request_custom_fields_19625750261524').show();
+ }
+  })
+   $('#request_custom_fields_19625770512788').keyup(function() {
+  if($('#request_custom_fields_19625770512788').length == 0 || $('#request_custom_fields_19625770512788').val() == ''){
+		if($('#request_custom_fields_19625750261524').length > 0 && $('#request_custom_fields_19625750261524').val() != ''){
+		$('.request_custom_fields_19625750261524').show();
+ }
+    if($('#request_custom_fields_19625750261524').length == 0 || $('#request_custom_fields_19625750261524').val() == ''){
+		$('.request_custom_fields_19625750261524').hide();
+ }
+ }
+  })
+//show or hide appeal link 9 field based on link 8 content
+  $('#request_custom_fields_19625750261524').keyup(function() {
+  if($('#request_custom_fields_19625750261524').length > 0 && $('#request_custom_fields_19625750261524').val() != ''){
+		$('.request_custom_fields_19625767208340').show();
+ }
+  })
+   $('#request_custom_fields_19625750261524').keyup(function() {
+  if($('#request_custom_fields_19625750261524').length == 0 || $('#request_custom_fields_19625750261524').val() == ''){
+				if($('#request_custom_fields_19625767208340').length > 0 && $('#request_custom_fields_19625767208340').val() != ''){
+		$('.request_custom_fields_19625767208340').show();
+ }
+    if($('#request_custom_fields_19625767208340').length == 0 || $('#request_custom_fields_19625767208340').val() == ''){
+		$('.request_custom_fields_19625767208340').hide();
+ }
+ }
+  })
+//show or hide appeal link 10 field based on link 9 content
+  $('#request_custom_fields_19625767208340').keyup(function() {
+  if($('#request_custom_fields_19625767208340').length > 0 && $('#request_custom_fields_19625767208340').val() != ''){
+		$('.request_custom_fields_19625803545364').show();
+ }
+  })
+   $('#request_custom_fields_19625767208340').keyup(function() {
+  if($('#request_custom_fields_19625767208340').length == 0 || $('#request_custom_fields_19625767208340').val() == ''){
+						if($('#request_custom_fields_19625803545364').length > 0 && $('#request_custom_fields_19625803545364').val() != ''){
+		$('.request_custom_fields_19625803545364').show();
+ }
+    if($('#request_custom_fields_19625803545364').length == 0 || $('#request_custom_fields_19625803545364').val() == ''){
+		$('.request_custom_fields_19625803545364').hide();
+ }
+ }
+  })
+
+// display correct tip on Appeals Form for Users Impacted by Copyright Removals Form
+var selected = $('#request_issue_type_select option:selected').val();
+if (selected == "22969554005396") {
+$('div.lt-new-request-tip_info').hide();
+
+  $('.request_custom_fields_19625698843924').hide();
+  $('.request_custom_fields_19625699552532').hide();
+  $('.request_custom_fields_19625700397588').hide();
+  $('.request_custom_fields_19625755462548').hide();
+  $('.request_custom_fields_19625769707284').hide();
+  $('.request_custom_fields_19625770512788').hide();
+  $('.request_custom_fields_19625750261524').hide();
+  $('.request_custom_fields_19625767208340').hide();
+  $('.request_custom_fields_19625803545364').hide();
+  $('.request_custom_fields_19625657760532').hide();
+  }
+
+//show or hide appeal link 2 field based on link 1 content
+  $('#request_custom_fields_19625697606804').keyup(function() {
+  if($('#request_custom_fields_19625697606804').length > 0 && $('#request_custom_fields_19625697606804').val() != ''){
+		$('.request_custom_fields_19625698843924').show();
+ }
+  })
+   $('#request_custom_fields_19625697606804').keyup(function() {
+  if($('#request_custom_fields_19625697606804').length == 0 || $('#request_custom_fields_19625697606804').val() == ''){
+		if($('#request_custom_fields_19625698843924').length == 0 || $('#request_custom_fields_19625698843924').val() == ''){
+    $('.request_custom_fields_19625698843924').hide();
+    }
+    if($('#request_custom_fields_19625698843924').length > 0 && $('#request_custom_fields_19625698843924').val() != ''){
+		$('.request_custom_fields_19625698843924').show();
+ }
+ }
+  })
+//show or hide appeal link 3 field based on link 2 content
+  $('#request_custom_fields_19625698843924').keyup(function() {
+  if($('#request_custom_fields_19625698843924').length > 0 && $('#request_custom_fields_19625698843924').val() != ''){
+		$('.request_custom_fields_19625699552532').show();
+ }
+  })
+   $('#request_custom_fields_19625698843924').keyup(function() {
+  if($('#request_custom_fields_19625698843924').length == 0 || $('#request_custom_fields_19625698843924').val() == ''){
+		if($('#request_custom_fields_19625699552532').length == 0 || $('#request_custom_fields_19625699552532').val() == ''){
+		$('.request_custom_fields_19625699552532').hide();
+    }
+    if($('#request_custom_fields_19625699552532').length > 0 && $('#request_custom_fields_19625699552532').val() != ''){
+		$('.request_custom_fields_19625699552532').show();
+ }
+ }
+  })
+//show or hide appeal link 4 field based on link 3 content
+  $('#request_custom_fields_19625699552532').keyup(function() {
+  if($('#request_custom_fields_19625699552532').length > 0 && $('#request_custom_fields_19625699552532').val() != ''){
+		$('.request_custom_fields_19625700397588').show();
+ }
+  })
+   $('#request_custom_fields_19625699552532').keyup(function() {
+  if($('#request_custom_fields_19625699552532').length == 0 || $('#request_custom_fields_19625699552532').val() == ''){
+		if($('#request_custom_fields_19625700397588').length > 0 && $('#request_custom_fields_19625700397588').val() != ''){
+		$('.request_custom_fields_19625700397588').show();
+ }
+    if($('#request_custom_fields_19625700397588').length == 0 || $('#request_custom_fields_19625700397588').val() == ''){
+		$('.request_custom_fields_19625700397588').hide();
+    }
+ }
+  })
+//show or hide appeal link 5 field based on link 4 content
+  $('#request_custom_fields_19625700397588').keyup(function() {
+  if($('#request_custom_fields_19625700397588').length > 0 && $('#request_custom_fields_19625700397588').val() != ''){
+		$('.request_custom_fields_19625755462548').show();
+ }
+  })
+   $('#request_custom_fields_19625700397588').keyup(function() {
+  if($('#request_custom_fields_19625700397588').length == 0 || $('#request_custom_fields_19625700397588').val() == ''){
+		if($('#request_custom_fields_19625755462548').length > 0 && $('#request_custom_fields_19625755462548').val() != ''){
+		$('.request_custom_fields_19625755462548').show();
+ }
+    if($('#request_custom_fields_19625755462548').length == 0 || $('#request_custom_fields_19625755462548').val() == ''){
+		$('.request_custom_fields_19625755462548').hide();
+ }
+ }
+  })
+//show or hide appeal link 6 field based on link 5 content
+  $('#request_custom_fields_19625755462548').keyup(function() {
+  if($('#request_custom_fields_19625755462548').length > 0 && $('#request_custom_fields_19625755462548').val() != ''){
+		$('.request_custom_fields_19625769707284').show();
+ }
+  })
+   $('#request_custom_fields_19625755462548').keyup(function() {
+  if($('#request_custom_fields_19625755462548').length == 0 || $('#request_custom_fields_19625755462548').val() == ''){
+		if($('#request_custom_fields_19625769707284').length > 0 && $('#request_custom_fields_19625769707284').val() != ''){
+		$('.request_custom_fields_19625769707284').show();
+ }
+    if($('#request_custom_fields_19625769707284').length == 0 || $('#request_custom_fields_19625769707284').val() == ''){
+		$('.request_custom_fields_19625769707284').hide();
+ }
+ }
+  })
+//show or hide appeal link 7 field based on link 6 content
+  $('#request_custom_fields_19625769707284').keyup(function() {
+  if($('#request_custom_fields_19625769707284').length > 0 && $('#request_custom_fields_19625769707284').val() != ''){
+		$('.request_custom_fields_19625770512788').show();
+ }
+  })
+   $('#request_custom_fields_19625769707284').keyup(function() {
+  if($('#request_custom_fields_19625769707284').length == 0 || $('#request_custom_fields_19625769707284').val() == ''){
+		if($('#request_custom_fields_19625770512788').length > 0 && $('#request_custom_fields_19625770512788').val() != ''){
+		$('.request_custom_fields_19625770512788').show();
+ }
+    if($('#request_custom_fields_19625770512788').length == 0 || $('#request_custom_fields_19625770512788').val() == ''){
+		$('.request_custom_fields_19625770512788').hide();
+ }
+ }
+  })
+//show or hide appeal link 8 field based on link 7 content
+  $('#request_custom_fields_19625770512788').keyup(function() {
+  if($('#request_custom_fields_19625770512788').length > 0 && $('#request_custom_fields_19625770512788').val() != ''){
+		$('.request_custom_fields_19625750261524').show();
+ }
+  })
+   $('#request_custom_fields_19625770512788').keyup(function() {
+  if($('#request_custom_fields_19625770512788').length == 0 || $('#request_custom_fields_19625770512788').val() == ''){
+		if($('#request_custom_fields_19625750261524').length > 0 && $('#request_custom_fields_19625750261524').val() != ''){
+		$('.request_custom_fields_19625750261524').show();
+ }
+    if($('#request_custom_fields_19625750261524').length == 0 || $('#request_custom_fields_19625750261524').val() == ''){
+		$('.request_custom_fields_19625750261524').hide();
+ }
+ }
+  })
+//show or hide appeal link 9 field based on link 8 content
+  $('#request_custom_fields_19625750261524').keyup(function() {
+  if($('#request_custom_fields_19625750261524').length > 0 && $('#request_custom_fields_19625750261524').val() != ''){
+		$('.request_custom_fields_19625767208340').show();
+ }
+  })
+   $('#request_custom_fields_19625750261524').keyup(function() {
+  if($('#request_custom_fields_19625750261524').length == 0 || $('#request_custom_fields_19625750261524').val() == ''){
+				if($('#request_custom_fields_19625767208340').length > 0 && $('#request_custom_fields_19625767208340').val() != ''){
+		$('.request_custom_fields_19625767208340').show();
+ }
+    if($('#request_custom_fields_19625767208340').length == 0 || $('#request_custom_fields_19625767208340').val() == ''){
+		$('.request_custom_fields_19625767208340').hide();
+ }
+ }
+  })
+//show or hide appeal link 10 field based on link 9 content
+  $('#request_custom_fields_19625767208340').keyup(function() {
+  if($('#request_custom_fields_19625767208340').length > 0 && $('#request_custom_fields_19625767208340').val() != ''){
+		$('.request_custom_fields_19625803545364').show();
+ }
+  })
+   $('#request_custom_fields_19625767208340').keyup(function() {
+  if($('#request_custom_fields_19625767208340').length == 0 || $('#request_custom_fields_19625767208340').val() == ''){
+						if($('#request_custom_fields_19625803545364').length > 0 && $('#request_custom_fields_19625803545364').val() != ''){
+		$('.request_custom_fields_19625803545364').show();
+ }
+    if($('#request_custom_fields_19625803545364').length == 0 || $('#request_custom_fields_19625803545364').val() == ''){
+		$('.request_custom_fields_19625803545364').hide();
+ }
+ }
+  })
+
+
+// Hide fields on Report a bug form
+
+  var selected = $('#request_issue_type_select option:selected').val();
+  if (selected == "23708886396180") {
+    $('.form-field.request_description').hide(); // Hide description
+    $('.form-field.request_subject').hide();
+    $('label[for="request-attachments"]').closest('.form-field').hide(); 
+    $('.request_anonymous_requester_email').hide();
+    $('footer input[type="submit"]').hide();
+    $('.request_custom_fields_23708551020180').hide();
+    $('.lt-new-request-tip_info').hide();
+		$('.report_bug').show();
+		$('.request_custom_fields_23708551020180').append(report_bug);
+} 
+
+
+
+if(ticketForm == "22936680744980") {
+  document.getElementById("lt-start-screen-wrap").style.backgroundColor = "#AEEF0F";
+    }
+//Conditional fields for Grievence Form
+var selected = $('#request_issue_type_select option:selected').val();
+if (selected == "28111115147668") {
+  $('div.lt-new-request-tip_info').hide();
+$('div.go_disclaimer').show();
+  $('.request_custom_fields_28116752553876').hide();
+  $('.request_custom_fields_28117264455316').hide();
+  $('.request_custom_fields_28117336473108').hide();
+  $('.request_custom_fields_28117422880404').hide();
+  $('.request_custom_fields_28117390780180').hide();
+  $('.request_custom_fields_28117391966356').hide();
+  $('.request_custom_fields_28117440514196').hide();
+  $('.request_custom_fields_28117405005588').hide();
+  $('.request_custom_fields_28116704071956').hide();
+  $('.form-field.request_subject').hide(); // Hide subject
+	$('#request_subject').val('Grievance Officer Report'); // autofill subject
+  $('#g_o_details').show();
+  $('label[for=request_description]').html("");
+  $('label[for=request_description]').append(g_o_details);
+  $('#dsa_report_atts').show();
+  $('label[for=request-attachments]').html("");
+  $('label[for=request-attachments]').append(dsa_report_atts);
+  //Secondary helper text for Reddit URL for Copyright Field ID 24438765
+$('#request_custom_fields_24438765_hint').after(copyright_url_second_hint);
+$('#copyright_url_second_hint').show();
+//Secondary helper text for Additonal information for Copyright Field ID 24438775
+$('#request_custom_fields_24438775_hint').after(copyright_abuse);
+$('#copyright_abuse').show();
+  }
+
+function applyIndiaGrievanceSubjectInitialState() {
+  if ($('#request_issue_type_select').val() == "28111115147668") {
+    $('.form-field.request_subject').hide();
+    $('#request_subject').val('Grievance Officer Report');
+  }
+}
+
+applyIndiaGrievanceSubjectInitialState();
+setTimeout(applyIndiaGrievanceSubjectInitialState, 250);
+setTimeout(applyIndiaGrievanceSubjectInitialState, 1000);
+setTimeout(applyIndiaGrievanceSubjectInitialState, 1500);
+
+//show or hide appeal link 2 field based on link 1 content
+  $('#request_custom_fields_28116697917076').keyup(function() {
+  if($('#request_custom_fields_28116697917076').length > 0 && $('#request_custom_fields_28116697917076').val() != ''){
+		$('.request_custom_fields_28116752553876').show();
+ }
+  })
+   $('#request_custom_fields_28116697917076').keyup(function() {
+  if($('#request_custom_fields_28116697917076').length == 0 || $('#request_custom_fields_28116697917076').val() == ''){
+		if($('#request_custom_fields_28116752553876').length == 0 || $('#request_custom_fields_28116752553876').val() == ''){
+    $('.request_custom_fields_28116752553876').hide();
+    }
+    if($('#request_custom_fields_28116752553876').length > 0 && $('#request_custom_fields_28116752553876').val() != ''){
+		$('.request_custom_fields_28116752553876').show();
+ }
+ }
+  })
+//show or hide appeal link 3 field based on link 2 content
+  $('#request_custom_fields_28116752553876').keyup(function() {
+  if($('#request_custom_fields_28116752553876').length > 0 && $('#request_custom_fields_28116752553876').val() != ''){
+		$('.request_custom_fields_28117264455316').show();
+ }
+  })
+   $('#request_custom_fields_28116752553876').keyup(function() {
+  if($('#request_custom_fields_28116752553876').length == 0 || $('#request_custom_fields_28116752553876').val() == ''){
+		if($('#request_custom_fields_28117264455316').length == 0 || $('#request_custom_fields_28117264455316').val() == ''){
+		$('.request_custom_fields_28117264455316').hide();
+    }
+    if($('#request_custom_fields_28117264455316').length > 0 && $('#request_custom_fields_28117264455316').val() != ''){
+		$('.request_custom_fields_28117264455316').show();
+ }
+ }
+  })
+//show or hide appeal link 4 field based on link 3 content
+  $('#request_custom_fields_28117264455316').keyup(function() {
+  if($('#request_custom_fields_28117264455316').length > 0 && $('#request_custom_fields_28117264455316').val() != ''){
+		$('.request_custom_fields_28117336473108').show();
+ }
+  })
+   $('#request_custom_fields_28117264455316').keyup(function() {
+  if($('#request_custom_fields_28117264455316').length == 0 || $('#request_custom_fields_28117264455316').val() == ''){
+		if($('#request_custom_fields_28117336473108').length > 0 && $('#request_custom_fields_28117336473108').val() != ''){
+		$('.request_custom_fields_28117336473108').show();
+ }
+    if($('#request_custom_fields_28117336473108').length == 0 || $('#request_custom_fields_28117336473108').val() == ''){
+		$('.request_custom_fields_28117336473108').hide();
+    }
+ }
+  })
+//show or hide appeal link 5 field based on link 4 content
+  $('#request_custom_fields_28117336473108').keyup(function() {
+  if($('#request_custom_fields_28117336473108').length > 0 && $('#request_custom_fields_28117336473108').val() != ''){
+		$('.request_custom_fields_28117422880404').show();
+ }
+  })
+   $('#request_custom_fields_28117336473108').keyup(function() {
+  if($('#request_custom_fields_28117336473108').length == 0 || $('#request_custom_fields_28117336473108').val() == ''){
+		if($('#request_custom_fields_28117422880404').length > 0 && $('#request_custom_fields_28117422880404').val() != ''){
+		$('.request_custom_fields_28117422880404').show();
+ }
+    if($('#request_custom_fields_28117422880404').length == 0 || $('#request_custom_fields_28117422880404').val() == ''){
+		$('.request_custom_fields_28117422880404').hide();
+ }
+ }
+  })
+//show or hide appeal link 6 field based on link 5 content
+  $('#request_custom_fields_28117422880404').keyup(function() {
+  if($('#request_custom_fields_28117422880404').length > 0 && $('#request_custom_fields_28117422880404').val() != ''){
+		$('.request_custom_fields_28117390780180').show();
+ }
+  })
+   $('#request_custom_fields_28117422880404').keyup(function() {
+  if($('#request_custom_fields_28117422880404').length == 0 || $('#request_custom_fields_28117422880404').val() == ''){
+		if($('#request_custom_fields_28117390780180').length > 0 && $('#request_custom_fields_28117390780180').val() != ''){
+		$('.request_custom_fields_28117390780180').show();
+ }
+    if($('#request_custom_fields_28117390780180').length == 0 || $('#request_custom_fields_28117390780180').val() == ''){
+		$('.request_custom_fields_28117390780180').hide();
+ }
+ }
+  })
+//show or hide appeal link 7 field based on link 6 content
+  $('#request_custom_fields_28117390780180').keyup(function() {
+  if($('#request_custom_fields_28117390780180').length > 0 && $('#request_custom_fields_28117390780180').val() != ''){
+		$('.request_custom_fields_28117391966356').show();
+ }
+  })
+   $('#request_custom_fields_28117390780180').keyup(function() {
+  if($('#request_custom_fields_28117390780180').length == 0 || $('#request_custom_fields_28117390780180').val() == ''){
+		if($('#request_custom_fields_28117391966356').length > 0 && $('#request_custom_fields_28117391966356').val() != ''){
+		$('.request_custom_fields_28117391966356').show();
+ }
+    if($('#request_custom_fields_28117391966356').length == 0 || $('#request_custom_fields_28117391966356').val() == ''){
+		$('.request_custom_fields_28117391966356').hide();
+ }
+ }
+  })
+//show or hide appeal link 8 field based on link 7 content
+  $('#request_custom_fields_28117391966356').keyup(function() {
+  if($('#request_custom_fields_28117391966356').length > 0 && $('#request_custom_fields_28117391966356').val() != ''){
+		$('.request_custom_fields_28117440514196').show();
+ }
+  })
+   $('#request_custom_fields_28117391966356').keyup(function() {
+  if($('#request_custom_fields_28117391966356').length == 0 || $('#request_custom_fields_28117391966356').val() == ''){
+		if($('#request_custom_fields_28117440514196').length > 0 && $('#request_custom_fields_28117440514196').val() != ''){
+		$('.request_custom_fields_28117440514196').show();
+ }
+    if($('#request_custom_fields_28117440514196').length == 0 || $('#request_custom_fields_28117440514196').val() == ''){
+		$('.request_custom_fields_28117440514196').hide();
+ }
+ }
+  })
+//show or hide appeal link 9 field based on link 8 content
+  $('#request_custom_fields_28117440514196').keyup(function() {
+  if($('#request_custom_fields_28117440514196').length > 0 && $('#request_custom_fields_28117440514196').val() != ''){
+		$('.request_custom_fields_28117405005588').show();
+ }
+  })
+   $('#request_custom_fields_28117440514196').keyup(function() {
+  if($('#request_custom_fields_28117440514196').length == 0 || $('#request_custom_fields_28117440514196').val() == ''){
+				if($('#request_custom_fields_28117405005588').length > 0 && $('#request_custom_fields_28117405005588').val() != ''){
+		$('.request_custom_fields_28117405005588').show();
+ }
+    if($('#request_custom_fields_28117405005588').length == 0 || $('#request_custom_fields_28117405005588').val() == ''){
+		$('.request_custom_fields_28117405005588').hide();
+ }
+ }
+  })
+//show or hide appeal link 10 field based on link 9 content
+  $('#request_custom_fields_28117405005588').keyup(function() {
+  if($('#request_custom_fields_28117405005588').length > 0 && $('#request_custom_fields_28117405005588').val() != ''){
+		$('.request_custom_fields_28116704071956').show();
+ }
+  })
+   $('#request_custom_fields_28117405005588').keyup(function() {
+  if($('#request_custom_fields_28117405005588').length == 0 || $('#request_custom_fields_28117405005588').val() == ''){
+						if($('#request_custom_fields_28116704071956').length > 0 && $('#request_custom_fields_28116704071956').val() != ''){
+		$('.request_custom_fields_28116704071956').show();
+ }
+    if($('#request_custom_fields_28116704071956').length == 0 || $('#request_custom_fields_28116704071956').val() == ''){
+		$('.request_custom_fields_28116704071956').hide();
+ }
+ }
+  })
+
+
+// Reddit request form hide submit button
+$("#request_custom_fields_29166873681428").on("change", function() {
+  var selected = $(this).val();
+
+  // Check if the selected value is empty or starts with "§"
+  if (selected === "rr_mod_removed_from_community" || selected === "rr_denied" || selected === "rr_tmr") {
+    $('footer input[type="submit"]').hide();
+    $('#request_description').closest('.form-field').hide();
+    $('#request-attachments').closest('.form-field').hide();
+    $('#request_subject').closest('.form-field').hide();
+    $('.request_anonymous_requester_email').hide();
+  } else {
+     // If other options are selected, show the hidden fields again
+    $('footer input[type="submit"]').show();
+    $('#request_description').closest('.form-field').show();
+    $('#request-attachments').closest('.form-field').show();
+    $('#request_subject').closest('.form-field').show();
+    $('.request_anonymous_requester_email').show();
+  }
+}).trigger('change'); // Trigger the change event on page load
+
+
+// AB-1394 Child Sexual Abuse Report Form for Content You are Portrayed in
+var selected = $('#request_issue_type_select option:selected').val();
+  if (selected == "32959838978452") {
+    $('.form-field.request_subject').hide(); // Hide subject
+		$('#request_subject').val('AB-1394 Submission'); // autofill subject
+    $('.form-field.request_description').hide(); // Hide description
+		$('#request_description').val('AB-1394 Submission'); // autofill description
+    $('.request_custom_fields_32966579076244').hide(); //hide dual selector
+    $('div.lt-new-request-tip_info').hide();
+    $('div.ab_disclaimer').show();
+    var mail = $(".form-field.request_anonymous_requester_email");
+    var date = $(".form-field.request_custom_fields_32966501789844");
+    $(mail).appendTo(date);
+  }
+
+function applyChildSafetyReportInitialState() {
+  if ($('#request_issue_type_select').val() == "32959838978452") {
+    $('.form-field.request_subject').hide();
+    $('#request_subject').val('AB-1394 Submission');
+    $('.form-field.request_description').hide();
+    $('#request_description').val('AB-1394 Submission');
+  }
+}
+
+applyChildSafetyReportInitialState();
+setTimeout(applyChildSafetyReportInitialState, 250);
+setTimeout(applyChildSafetyReportInitialState, 1000);
+setTimeout(applyChildSafetyReportInitialState, 1500);
+
+$("#request_custom_fields_32965867250964").on("change paste keyup", function() {
+  var selected = $('#request_custom_fields_32965867250964').val();
+  var selected2 = $('#request_custom_fields_32966027798804').val();
+  if (selected == "california_ab_1394" && selected2 == "yes_under18_ab_1394")
+  {
+    $('#request_custom_fields_32966579076244').val('ca/yes');
+} else {
+     $('#request_custom_fields_32966579076244').val('ca/no');  
+    }                                       
+  });
+
+$("#request_custom_fields_32966027798804").on("change paste keyup", function() {
+  var selected = $('#request_custom_fields_32965867250964').val();
+  var selected2 = $('#request_custom_fields_32966027798804').val();
+  if (selected == "california_ab_1394" && selected2 == "yes_under18_ab_1394")
+{
+   $('#request_custom_fields_32966579076244').val('ca/yes');
+} else {
+     $('#request_custom_fields_32966579076244').val('ca/no');  
+  }
+  });
+
+$("#request_custom_fields_32966072251796").on("change paste keyup", function() {
+  var selected = $('#request_custom_fields_32966072251796').val();
+  if (selected == "fax_ab_1394")
+    {
+      $(".form-field.request_anonymous_requester_email").hide();
+      $("#request_anonymous_requester_email").val('anon-1394@example.com');
+    }  else {
+      $(".form-field.request_anonymous_requester_email").show();
+      $("#request_anonymous_requester_email").val('')
+    }
+});
+
+var selected = $('#request_custom_fields_32966072251796').val();
+  if (selected == "fax_ab_1394")
+    {
+      $(".form-field.request_anonymous_requester_email").hide();
+      $("#request_anonymous_requester_email").val('anon-1394@example.com');
+    }  else {
+      $(".form-field.request_anonymous_requester_email").show();
+      $("#request_anonymous_requester_email").val('')
+    }
+
+// Community Chat Form
+
+$("#request_custom_fields_19148906982804").on("change paste keyup", function() {
+  var selected = $('#request_custom_fields_19148906982804').val();
+  if (selected == "chat_channels")
+  {
+    $('div.lt-new-request-tip_info').hide();
+    $('div.cc_dis').show();
+    $('html, body').animate({scrollTop: '0px'}, 300);
+    $('.form-field.request_subject').hide(); // Hide subject
+		$('#request_subject').val('Chat Channels Submission'); // autofill subject
+  	$('label[for=request_description]').html(cc_descript);
+    $('div.request_anonymous_requester_email').hide();
+    $('#request_anonymous_requester_email').val('anon-cc@example.com')
+    
+  } else {
+    $('div.cc_dis').hide();   
+		$('#request_subject').val('');
+    $('div.request_anonymous_requester_email').show();
+    $('#request_anonymous_requester_email').val('')
+  }
+});
+
+var selected = $('#request_custom_fields_19148906982804').val();
+  if (selected == "chat_channels")
+{
+    $('div.lt-new-request-tip_info').hide();
+    $('div.cc_dis').show();
+    $('html, body').animate({scrollTop: '0px'}, 300);
+    $('.form-field.request_subject').hide(); // Hide subject
+		$('#request_subject').val('Chat Channels Submission'); // autofill subject
+    cc_descript = document.getElementById('cc_descript').innerHTML;
+  	$('label[for=request_description]').html(cc_descript);
+  $('div.request_anonymous_requester_email').hide();
+    $('#request_anonymous_requester_email').val('anon-cc@example.com')
+  }
+
+$("#request_custom_fields_19148906982804").on("change paste keyup", function() {
+  var selected = $('#request_custom_fields_19148906982804').val();
+  if (selected != "chat_channels" && selected != "community_funds" && selected != "helper_rewards_program")
+    { 
+      $('label[for=request_description]').html(descript_base);
+      $('.form-field.request_subject').show(); // show subject
+	   $('#request_subject').val(''); // autofill subject
+      $('div.request_anonymous_requester_email').show();
+    $('#request_anonymous_requester_email').val('')
+    }
+});
+
+//EDR Redirect
+
+var edrold = ["360001384392"]
+var edrnew = ["https://legalrequests.reddithelp.com/hc/en-us/requests/new?ticket_form_id=23981095906715"]
+if (window.location.href.indexOf("requests/new?ticket_form_id=") > -1) {
+  for (var i = 0; i < edrold.length; i++){
+    if (window.location.href.indexOf(edrold[i]) > -1) {
+      window.location.href = edrnew[i];
+    }}
+}
+
+// Mode code of conduct Mod Call description update
+$("#request_custom_fields_19300354050708").on("change paste keyup", function() {
+  var selected = $('#request_custom_fields_19300354050708').val();
+  if (selected = "coccall")
+{
+$('label[for=request_description]').html(modcall);
+    }
+});
+
+ $("#request_custom_fields_19300354050708").on("change paste keyup", function() {
+  var selected = $('#request_custom_fields_19300354050708').val();
+  if (selected != "coccall")
+{
+$('label[for=request_description]').html(descript_base);
+   }
+});
+
+//cf form v2
+var selected = $('#request_issue_type_select option:selected').val();
+if (selected == "35634548247700") {
+  $('#request-attachments').closest('.form-field').hide();
+  $('div.lt-new-request-tip_info').hide();
+    $('div.cf_disclaimer').show();
+    $('html, body').animate({scrollTop: '0px'}, 300);
+    $('.form-field.request_subject').hide(); // Hide subject
+		$('#request_subject').val('Community Funds Submission'); // autofill subject
+    $('.form-field.request_description').hide(); // Hide subject
+		$('#request_description').val('Community Funds Submission'); // autofill subject
+    $('.request_custom_fields_35736829079828').hide();
+  $('.request_custom_fields_32381883925012').prepend(cf_contact);
+  $('#cf_contact').show();
+  $('div.request_custom_fields_35635061228820').after(cf_project);
+  //$('div.request_custom_fields_35735628082452').prepend(cf_project);
+  //$('div.request_custom_fields_40269609670420').prepend(cf_project2);
+  $('#cf_project').show();
+  //$('#cf_project2').show();
+  srhint = '<p id="sub_hint" style="font-weight:normal">' + document.getElementById('request_custom_fields_32381883925012_hint').innerHTML + '</p>';
+    $('#request_custom_fields_32381883925012_label').after(srhint);
+   $('#request_custom_fields_32381883925012_hint').hide();
+  unhint = '<p id="sub_hint" style="font-weight:normal">' + document.getElementById('request_custom_fields_32382026603156_hint').innerHTML + '</p>';
+    $('#request_custom_fields_32382026603156_label').after(unhint);
+   $('#request_custom_fields_32382026603156_hint').hide();
+  lochint = '<p id="sub_hint" style="font-weight:normal">' + document.getElementById('request_custom_fields_32383545064084_hint').innerHTML + '</p>';
+    $('#request_custom_fields_32383545064084_label').after(lochint);
+   $('#request_custom_fields_32383545064084_hint').hide();
+  countryhint = '<p id="sub_hint" style="font-weight:normal">' + document.getElementById('request_custom_fields_35635061228820_hint').innerHTML + '</p>';
+    $('#request_custom_fields_35635061228820_label').after(countryhint);
+   $('#request_custom_fields_35635061228820_hint').hide();
+projtypehint = '<p id="sub_hint" style="font-weight:normal">' + document.getElementById('request_custom_fields_35735628082452_hint').innerHTML + '</p>';
+    $('#request_custom_fields_35735628082452_label').after(projtypehint);
+   $('#request_custom_fields_35735628082452_hint').hide();
+  involvehint = '<p id="sub_hint" style="font-weight:normal">' + document.getElementById('request_custom_fields_35734939218452_hint').innerHTML + '</p>';
+    $('#request_custom_fields_35734939218452_label').after(involvehint);
+   $('#request_custom_fields_35734939218452_hint').hide();
+  affhint = '<p id="sub_hint" style="font-weight:normal">' + document.getElementById('request_custom_fields_35735010092692_hint').innerHTML + '</p>';
+    $('#request_custom_fields_35735010092692_label').after(affhint);
+   $('#request_custom_fields_35735010092692_hint').hide();
+  frnamehint = '<p id="sub_hint" style="font-weight:normal">' + document.getElementById('request_custom_fields_32522720223636_hint').innerHTML + '</p>';
+    $('#request_custom_fields_32522720223636_label').after(frnamehint);
+   $('#request_custom_fields_32522720223636_hint').hide();
+   frpracthint = '<p id="sub_hint" style="font-weight:normal">' + document.getElementById('request_custom_fields_32523382097556_hint').innerHTML + '</p>';
+    $('#request_custom_fields_32523382097556_label').after(frpracthint);
+   $('#request_custom_fields_32523382097556_hint').hide();
+    inplacehint = '<p id="sub_hint" style="font-weight:normal">' + document.getElementById('request_custom_fields_35635860000276_hint').innerHTML + '</p>';
+    $('#request_custom_fields_35635860000276_label').after(inplacehint);
+   $('#request_custom_fields_35635860000276_hint').hide();
+  inbudgehint = '<p id="sub_hint" style="font-weight:normal">' + document.getElementById('request_custom_fields_35636050040340_hint').innerHTML + '</p>';
+    $('#request_custom_fields_35636050040340_label').after(inbudgehint);
+   $('#request_custom_fields_35636050040340_hint').hide();
+  onplacehint = '<p id="sub_hint" style="font-weight:normal">' + document.getElementById('request_custom_fields_35734333178132_hint').innerHTML + '</p>';
+    $('#request_custom_fields_35734333178132_label').after(onplacehint);
+   $('#request_custom_fields_35734333178132_hint').hide();
+   eventtimehint = '<p id="sub_hint" style="font-weight:normal">' + document.getElementById('request_custom_fields_35734415879828_hint').innerHTML + '</p>';
+    $('#request_custom_fields_35734415879828_label').after(eventtimehint);
+   $('#request_custom_fields_35734415879828_hint').hide();
+     goodsprhint = '<p id="sub_hint" style="font-weight:normal">' + document.getElementById('request_custom_fields_35871580467092_hint').innerHTML + '</p>';
+    $('#request_custom_fields_35871580467092_label').after(goodsprhint);
+   $('#request_custom_fields_35871580467092_hint').hide();
+  fundsprhint = '<p id="sub_hint" style="font-weight:normal">' + document.getElementById('request_custom_fields_35871557806996_hint').innerHTML + '</p>';
+    $('#request_custom_fields_35871557806996_label').after(fundsprhint);
+   $('#request_custom_fields_35871557806996_hint').hide();
+  emailnote = '<p id="emailnote" style="font-weight:normal">' + document.getElementById('cf_closer').innerHTML + '</p>';
+  //emailnote = '<p id="sub_hint" style="font-weight:normal">Once you’ve submitted your application, you will receive an email confirmation with additional information.</p>';
+  $('#request_custom_fields_35735030766484').after(emailnote);
+  //$('#emailnote').show();
+}
+
+$("#request_custom_fields_35635061228820").on("change paste keyup", function() {
+  var selected = $('#request_custom_fields_35635061228820').val();
+  if (selected === "other_cf_2")
+    { 
+      $('#cf_project').remove();
+      $('div.request_custom_fields_35635383525652').after(cf_project);
+  $('#cf_project').show();
+    }
+});
+
+$("#request_custom_fields_35735628082452").on("change paste keyup", function() {
+  var selected = $('#request_custom_fields_35735628082452').val();
+  if (selected === "cf_fundraiser2")
+    { 
+      $('#request_custom_fields_35735628082452_hint').html(document.getElementById('cf_fund_hint').innerHTML);
+      $('#request_custom_fields_35735628082452_hint').show();
+    }
+ else if (selected === "cf_in-person_event2")
+    { 
+      $('#request_custom_fields_35735628082452_hint').html(document.getElementById('cf_in_person_hint').innerHTML);
+      $('#request_custom_fields_35735628082452_hint').show();
+    }
+else if (selected === "cf_online_event2")
+    { 
+      $('#request_custom_fields_35735628082452_hint').html(document.getElementById('cf_online_hint').innerHTML);
+      $('#request_custom_fields_35735628082452_hint').show();
+    }
+  else if (selected === "cf_community_project2")
+    { 
+      $('#request_custom_fields_35735628082452_hint').html(document.getElementById('cf_project_hint').innerHTML);
+      $('#request_custom_fields_35735628082452_hint').show();
+    } else {
+        $('#request_custom_fields_35735628082452_hint').hide();
+    }
+});
+
+var regcurr = /^[0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2}$/;
+$('#request_custom_fields_35871557806996').focusout(function() {
+  if(regcurr.test($('#request_custom_fields_35871557806996').val())){ 
+  console.log('regcurr')
+    if ($('#cf_regerror')){
+    $('#cf_regerror').remove()}
+ }
+  else {
+    if ($('#regerror')){
+    $('#regerror').remove()}
+$('div.request_custom_fields_35871557806996').append(cf_regerror)
+  }
+  })
+
+$('#request_custom_fields_35871524568468').focusout(function() {
+  if(regcurr.test($('#request_custom_fields_35871524568468').val())){ 
+  console.log('regcurr')
+    if ($('#cf_regerror')){
+    $('#cf_regerror').remove()}
+ }
+  else {
+    if ($('#regerror')){
+    $('#regerror').remove()}
+$('div.request_custom_fields_35871524568468').append(cf_regerror)
+  }
+  })
+
+$('#request_custom_fields_35871580467092').focusout(function() {
+  if(regcurr.test($('#request_custom_fields_35871580467092').val())){ 
+  console.log('regcurr')
+    if ($('#cf_regerror')){
+    $('#cf_regerror').remove()}
+ }
+  else {
+    if ($('#regerror')){
+    $('#regerror').remove()}
+$('div.request_custom_fields_35871580467092').append(cf_regerror)
+  }
+  })
+
+var selected = $('#request_issue_type_select option:selected').val();
+if (selected == "360001370251") {
+read_articles_privacy = '<div id="read_articles_privacy" class="help-block" style="font-weight:normal">' + document.getElementById('read_articles').innerHTML + '</div>';
+$('div.request_custom_fields_360041086972').after(read_articles_privacy);
+$('#read_articles_privacy').show();
+}
+
+function applyDevvitPurchasesLink() {
+  if ($('#request_issue_type_select').val() == "29770197409428") {
+    var redirectHtml = $('#devvit_gold_redirect').html();
+    if (redirectHtml) {
+      $('#request_custom_fields_29764567374740_hint').html(redirectHtml);
+    }
+  }
+}
+
+applyDevvitPurchasesLink();
+setTimeout(applyDevvitPurchasesLink, 250);
+setTimeout(applyDevvitPurchasesLink, 1000);
+setTimeout(applyDevvitPurchasesLink, 1500);
+
+
+//Ads with community content
+var selected = $('#request_issue_type_select option:selected').val();
+if (selected == "37986178602260") {
+  $('#request-attachments').closest('.form-field').hide();
+  $('div.lt-new-request-tip_info').hide();
+  $('div.request_anonymous_requester_email').hide();
+    $('#request_anonymous_requester_email').val('anon-optout@example.com')
+  $('.form-field.request_subject').hide(); // Hide subject
+		$('#request_subject').val('Ads with community content Opt Out'); // autofill subject
+  $('.form-field.request_description').hide(); // Hide description
+  $('#request_description').val('Ads with community content Opt Out'); // autofill description
+  $('div.request_custom_fields_37986116412564').hide();
+  $('div.request_custom_fields_37986168066708').hide();
+  $('#request_custom_fields_37986237346196').after("<p>By clicking submit, you are removing your post from use in ads. This change will go into effect within one business day.</p>");
+}
+
+var selected = $('#request_issue_type_select option:selected').val();
+var idval = $('#request_custom_fields_37986116412564').val();
+if (idval == "") {
+      $('#request_issue_type_select').after('<p class="notification notification-error notification-inline">Invalid request link. Please check the link and try again.</p>');
+  $('footer input[type="submit"]').hide();
+  $('div.request_custom_fields_37986237346196').hide();
+  
+    }
+
+function applyAdsOptOutInitialState() {
+  if ($('#request_issue_type_select').val() == "37986178602260") {
+    $('#request-attachments').closest('.form-field').hide();
+    $('div.lt-new-request-tip_info').hide();
+    $('div.request_anonymous_requester_email').hide();
+    $('#request_anonymous_requester_email').val('anon-optout@example.com');
+    $('.form-field.request_subject').hide();
+    $('#request_subject').val('Ads with community content Opt Out');
+    $('.form-field.request_description').hide();
+    $('#request_description').val('Ads with community content Opt Out');
+    $('div.request_custom_fields_37986116412564').hide();
+    $('div.request_custom_fields_37986168066708').hide();
+
+    if ($('#request_custom_fields_37986116412564').val() == "") {
+      $('footer input[type="submit"]').hide();
+      $('div.request_custom_fields_37986237346196').hide();
+    } else {
+      $('.notification-error').filter(function() {
+        return $(this).text().trim() == 'Invalid request link. Please check the link and try again.';
+      }).remove();
+      $('footer input[type="submit"]').show();
+      $('div.request_custom_fields_37986237346196').show();
+    }
+  }
+}
+
+applyAdsOptOutInitialState();
+setTimeout(applyAdsOptOutInitialState, 250);
+setTimeout(applyAdsOptOutInitialState, 1000);
+setTimeout(applyAdsOptOutInitialState, 1500);
+
+var selected = $('#request_issue_type_select option:selected').val();
+if (selected == "19300233728916") {
+moderator_code_of_conduct2a = '<p id="moderator_code_of_conduct2a">' + document.getElementById('moderator_code_of_conduct2').innerHTML + '</p>';
+$('div.request_custom_fields_19300354050708').append(moderator_code_of_conduct2a);
+$('#moderator_code_of_conduct2a').show();
+}
+
+
+var selected = $('#request_issue_type_select option:selected').val();
+  function applyDataAccessInitialState() {
+  var selected = $('#request_issue_type_select').val();
+
+  if (selected == "14868593862164") {
+    $('div.lt-new-request-tip_info').hide();
+    $('div.api_access_v2').show();
+    $('.form-field.request_subject').hide();
+    $('#request_subject').val('API Access Request');
+    $('.form-field.request_description').hide();
+  }
+}
+
+applyDataAccessInitialState();
+setTimeout(applyDataAccessInitialState, 250);
+setTimeout(applyDataAccessInitialState, 1000);
+
+$("#request_custom_fields_42139884615700").on("change", function() {
+  var selected = $(this).val();
+if (selected == "api_request_type_developer_clone") {
+  tinymce.get('request_description').setContent('Developer Request');
+  $('#request_description').val("Developer Request"); // autofill description
+  $('#request_custom_fields_42139981733524_hint').html(document.getElementById('api_access_inqury_hint').innerHTML);
+      $('#request_custom_fields_42139981733524_hint').show();
+  $('.request_anonymous_requester_email_hint').remove();
+}
+    
+else if (selected == "api_request_type_researcher_clone") {
+  tinymce.get('request_description').setContent('Researcher Request');
+   $('#request_description').val('Researcher Request'); // autofill description
+  $('#request_anonymous_requester_email').parent().append('<div class="request_anonymous_requester_email_hint">Please submit this form from a university-affiliated email address or your request will be denied.</div>');
+}
+  else if (selected == "api_request_type_enterprise_clone") {
+  tinymce.get('request_description').setContent('Enterprise Request');
+   $('#request_description').val('Enterprise Request'); // autofill description
+  $('.request_anonymous_requester_email_hint').remove();
+}
+  }).trigger('change');
+
+
+var avatarsShopHtml = (function () {
+  var el = document.getElementById('contact_form_-_collectible_avatar_shop_disclaimer');
+  return el ? '<div id="avatars_override_disclaimer" class="help-block">' + el.innerHTML + '</div>' : '';
+})();
+
+var SECOND_DROPDOWN      = '#request_custom_fields_360016149671';
+var SECOND_FIELD_WRAPPER = 'div.request_custom_fields_360016149671';
+
+function applyAvatarsOverride() {
+  var val  = $(SECOND_DROPDOWN).val();
+  var $wrap = $(SECOND_FIELD_WRAPPER);
+
+  $wrap.find('#avatars_override_disclaimer').remove();
+
+  if (val === 'no_collectible_avatar') {
+    $wrap.find('#disclaimer, .legacy-disclaimer, .avatars-disclaimer, #shop_disclaimer_block').remove();
+
+    if (avatarsShopHtml) {
+      $wrap.append(avatarsShopHtml);
+    }
+  }
+}
+
+$(document).on('change paste keyup', SECOND_DROPDOWN, applyAvatarsOverride);
+applyAvatarsOverride();
+
+var selected = $('#request_issue_type_select option:selected').val();
+  if (selected == "46148295367060") {
+    $('div.lt-new-request-tip_info').hide();
+    $('.form-field.request_subject').hide(); // Hide subject
+    $('#request_subject').val('Take It Down Request');
+    $('div.request_ticket_form_id').hide();
+    $('label[for=request_description]').html("Please provide a detailed description of why you believe this content violates your legal rights."); // change description field label
+    $('#request-attachments').closest('.form-field').hide();
+    $('div.tid_hint').show();
+    take_down_hint_4 = '<p class="help-block" id="take_down_hint_4">' + document.getElementById('tid_hint4').innerHTML + '</p>';
+    $('div.form-field.request_description').after(take_down_hint_4);
+  }
+
+function applyTakeItDownInitialState() {
+  if ($('#request_issue_type_select').val() == "46148295367060") {
+    $('.form-field.request_subject').hide();
+    $('#request_subject').val('Take It Down Request');
+    $('#request-attachments').closest('.form-field').hide();
+  }
+}
+
+applyTakeItDownInitialState();
+setTimeout(applyTakeItDownInitialState, 250);
+setTimeout(applyTakeItDownInitialState, 1000);
+setTimeout(applyTakeItDownInitialState, 1500);
+
+$("#request_custom_fields_46146309754388").on("change", function() {
+  var selected = $(this).val();
+  
+  // Define the values that should SHOW the fields
+  var validChoices = ["united_states_of_america_take_it_down", "", "-"];
+
+  // Select all the elements you want to toggle at once to keep it clean
+  var elementsToToggle = $(`
+    footer input[type="submit"], 
+    div.request_custom_fields_46146394524564, 
+    div.request_custom_fields_46146472067860, 
+    div.request_description, 
+    div.request_custom_fields_46146531510676, 
+    div.request_custom_fields_46146534213652, 
+    div.request_custom_fields_46146569738772,
+    p#take_down_hint_4
+  `);
+
+  if (validChoices.includes(selected)) {
+    elementsToToggle.show();
+    $('#take_down_hint_2').hide();
+  } else {
+    elementsToToggle.hide();
+if ($('#take_down_hint_2').length === 0) {
+    $('div.request_custom_fields_46146309754388').after(take_down_hint_2);
+} else {
+		$('#take_down_hint_2').show();
+  }
+    }
+}).trigger('change');
+
+$("#request_custom_fields_46146394524564").on("change", function() {
+  var selected = $(this).val();
+  
+  // Define the values that should SHOW the fields
+  var validChoices = ["ncii_tid", "lookalike_tid", "", "-"];
+
+  // Select all the elements you want to toggle at once to keep it clean
+  var elementsToToggle = $(`
+    footer input[type="submit"],  
+    div.request_custom_fields_46146472067860, 
+    div.request_description, 
+    div.request_custom_fields_46146531510676, 
+    div.request_custom_fields_46146534213652, 
+    div.request_custom_fields_46146569738772,
+    p#take_down_hint_4
+  `);
+
+  if (validChoices.includes(selected)) {
+    elementsToToggle.show();
+    $('#take_down_hint_3').hide();
+  } else {
+    elementsToToggle.hide();
+    if ($('#take_down_hint_3').length === 0) {
+    $('div.request_custom_fields_46146394524564').after(take_down_hint_3);
+      } else {
+		$('#take_down_hint_3').show();
+  }
+  }
+}).trigger('change');
+
+
+// Community Funds And Developer Program
+if ($('#request_issue_type_select').val() === '19148839169812') {
+  $('.request_custom_fields_19148906982804').after($('#dev_program_disclaimer'), $('#community_funds_disclaimer'));
+
+  $(document).on('change', '#request_custom_fields_19148906982804', function() {
+    var selected = $(this).val();
+    var isDeveloperProgram = selected === 'developer_program';
+    var isCommunityFunds = selected === 'community_funds';
+    var hideSystemFields = isDeveloperProgram || isCommunityFunds;
+
+    $('#dev_program_disclaimer').toggle(isDeveloperProgram);
+    $('#community_funds_disclaimer').toggle(isCommunityFunds);
+
+    $('#request_subject').closest('.form-field').toggle(!hideSystemFields);
+    $('#request_description').closest('.form-field').toggle(!hideSystemFields);
+    $('#request-attachments').closest('.form-field').toggle(!hideSystemFields);
+    $('footer input[type="submit"]').toggle(!hideSystemFields);
+  });
+
+  $('#request_custom_fields_19148906982804').trigger('change');
+}
+
+
+// Ads-API Form
+var selected = $('#request_issue_type_select option:selected').val();
+  if (selected == "50388520825236") {
+ 		$('div.lt-new-request-tip_info').hide();
+    $('div.ads_api_hint').show();
+    $('div.request_ticket_form_id').hide();
+    ads_api_id_account = '<p id="ads_api_id_account">' + document.getElementById('ads_api_account_id').innerHTML + '</p>';
+  ads_api_id_dev = '<p id="ads_api_id_dev">' + document.getElementById('ads_api_dev_id').innerHTML + '</p>';
+  ads_api_hint_desc = '<p id="ads_api_hint_desc">' + document.getElementById('ads_api_desc_hint').innerHTML + '</p>';
+  ads_api_sub= '<div id="ads_api_sub">' + document.getElementById('ads_api_sub1').innerHTML + '</div>';
+  ads_api_desc= '<div id="ads_api_desc">' + document.getElementById('ads_api_desc1').innerHTML + '</div>';
+    $('#request_custom_fields_50388371797524').after(ads_api_id_account);
+    $('#request_custom_fields_50388349321236').after(ads_api_id_dev);
+    $('div.form-field.request_description').append(ads_api_hint_desc);
+    $('label[for=request_description]').html(ads_api_desc);
+    $('label[for=request_subject]').html(ads_api_sub);
+  }
+
+function toggleAdsApiAccessFields() {
+  var selected = $('#request_custom_fields_50388258820628').val();
+
+  if (selected === "api_access_ads_api") {
+    $('#request_custom_fields_50388258820628_hint, .request_custom_fields_50388258820628_hint').hide();
+    if (!$('#ads_api_access').length) {
+      ads_api_access1 = '<p id="ads_api_access">' + document.getElementById('ads_api_access1').innerHTML + '</p>';
+      $('.form-field.request_custom_fields_50388258820628').append(ads_api_access1);
+    }
+    $('.form-field.request_description').hide();
+    $('.form-field.request_subject').hide();
+    $('label[for="request-attachments"]').closest('.form-field').hide();
+    $('footer input[type="submit"]').hide();
+    $('.form-field.request_custom_fields_50388371797524').hide();
+    $('.form-field.request_custom_fields_50388349321236').hide();
+    $('.form-field.request_custom_fields_50388431228180').hide();
+    $('.form-field.request_custom_fields_50388476310164').hide();
+  } else {
+    $('#request_custom_fields_50388258820628_hint, .request_custom_fields_50388258820628_hint').show();
+    $('#ads_api_access').remove();
+    $('.form-field.request_description').show();
+    $('.form-field.request_subject').show();
+    $('label[for="request-attachments"]').closest('.form-field').show();
+    $('footer input[type="submit"]').show();
+    $('.form-field.request_custom_fields_50388371797524').show();
+    $('.form-field.request_custom_fields_50388349321236').show();
+    $('.form-field.request_custom_fields_50388431228180').show();
+    $('.form-field.request_custom_fields_50388476310164').show();
+  }
+}
+
+$(document).on("change", "#request_custom_fields_50388258820628", toggleAdsApiAccessFields);
+setTimeout(toggleAdsApiAccessFields, 500);

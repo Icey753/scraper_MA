@@ -1,0 +1,253 @@
+/**
+ * Highlighting initialization
+ * @description code styling
+ * @typedef {Object} hljs
+ */
+$(() => {
+  if (window.hljs) {
+    hljs.highlightAll();
+  }
+});
+
+/**
+ * Create lightbox
+ * @description magnificPopup initialization for images and videos
+ */
+$(() => {
+  if ($.magnificPopup) {
+    // Lightbox with images
+    $('.image-with-lightbox').magnificPopup({
+      type: 'image',
+      closeOnContentClick: true,
+      closeBtnInside: false,
+      fixedContentPos: true,
+      mainClass: 'mfp-with-zoom', // class to remove default margin from left and right side
+      image: {
+        verticalFit: true,
+      },
+      zoom: {
+        enabled: true,
+        duration: 300, // don't foget to change the duration also in CSS
+      },
+    });
+
+    // Lightbox with videos
+    $('.image-with-video-icon').magnificPopup({
+      disableOn: 700,
+      type: 'iframe',
+      mainClass: 'mfp-fade',
+      removalDelay: 160,
+      preloader: false,
+      fixedContentPos: false,
+    });
+  }
+});
+
+/**
+ * Accordions
+ */
+$(() => {
+  $('.accordion__item-title').each((index, el) => {
+    const text = $(el).text();
+    const newButtonTag = $('<button>')[0];
+    const parentIndex = $(el).parents('.accordion').index();
+
+    // eslint-disable-next-line func-names
+    $.each(el.attributes, function () {
+      newButtonTag.setAttribute(this.name, this.value);
+      newButtonTag.setAttribute('aria-expanded', false);
+      newButtonTag.setAttribute(
+        'aria-controls',
+        `content-${parentIndex}${index}`,
+      );
+    });
+    newButtonTag.innerText = text;
+    $(el).replaceWith(newButtonTag);
+  });
+
+  $('.accordion__item-content').each((index, el) => {
+    const parentIndex = $(el).parents('.accordion').index();
+    $(el).attr('id', `content-${parentIndex}${index}`);
+  });
+
+  $(window.document).on('click', '.accordion__item-title', (e) => {
+    e.preventDefault();
+    const isExpanded = $(e.currentTarget).attr('aria-expanded') === 'true';
+    $(e.currentTarget)
+      .toggleClass('accordion__item-title--active')
+
+      .closest('.accordion__item')
+      .find('.accordion__item-content')
+      .first()
+      .slideToggle();
+    $(e.currentTarget).attr('aria-expanded', !isExpanded);
+  });
+});
+
+/**
+ * Tabs
+ */
+$(() => {
+  // eslint-disable-next-line func-names
+  const setFocus = function ($tabs, tabIndex) {
+    // undo tab control selected state,
+    // and make them not selectable with the tab key
+    // (all tabs)
+    const $link = $tabs.find('.tabs-link');
+    const $tab = $tabs.find('.tab');
+
+    $link.removeClass('is-active').attr({
+      tabindex: '-1',
+      'aria-selected': 'false',
+    });
+
+    $link.eq(tabIndex).addClass('is-active').attr({
+      tabindex: '0',
+      'aria-selected': 'true',
+    });
+
+    $tab.addClass('is-hidden');
+
+    $tab.eq(tabIndex).removeClass('is-hidden');
+  };
+
+  $('.tabs-menu').each((index, el) => {
+    $(el).attr('role', 'tablist');
+  });
+
+  $('.tabs-link').each((index, el) => {
+    const text = $(el).text();
+    const parentIndex = $(el).parents('.tabs').index();
+    const newLinkTag = $('<a>')[0];
+    // eslint-disable-next-line func-names
+    $.each(el.attributes, function () {
+      newLinkTag.setAttribute(this.name, this.value);
+      newLinkTag.setAttribute('aria-selected', index === 0);
+      newLinkTag.setAttribute(
+        'aria-controls',
+        `content-${parentIndex}${index}`,
+      );
+    });
+    newLinkTag.setAttribute('id', `tab-link-${parentIndex}${index}`);
+    newLinkTag.setAttribute(
+      'aria-controls',
+      `tab-content-${parentIndex}${index}`,
+    );
+    newLinkTag.setAttribute('role', 'tab');
+    newLinkTag.setAttribute('href', `#tab-content-${parentIndex}${index}`);
+    newLinkTag.innerText = text;
+    $(el).replaceWith(newLinkTag);
+  });
+
+  $('.tab').each((index, el) => {
+    const parentIndex = $(el).parents('.tabs').index();
+    $(el)
+      .attr('id', `tab-content-${parentIndex}${index}`)
+      .attr('aria-labelledby', `tab-link-${parentIndex}${index}`)
+      .attr('role', 'tabpanel');
+  });
+
+  $(window.document).on('click', '.tabs-link', (e) => {
+    e.preventDefault();
+    const $link = $(e.currentTarget);
+    const $tabs = $link.parents('.tabs');
+    const tabIndex = $link.index();
+    setFocus($tabs, tabIndex);
+  });
+  $(window.document).on('keydown', '.tabs-link', (e) => {
+    const LEFT_ARROW = 37;
+    const UP_ARROW = 38;
+    const RIGHT_ARROW = 39;
+    const DOWN_ARROW = 40;
+    const $link = $(e.currentTarget);
+
+    const $tabs = $link.parents('.tabs');
+    const $tabLinks = $tabs.find('.tabs-link');
+    let index = $link.index();
+    const k = e.which || e.keyCode;
+
+    // if the key pressed was an arrow key
+    if (k >= LEFT_ARROW && k <= DOWN_ARROW) {
+      // move left one tab for left and up arrows
+      if (k === LEFT_ARROW || k === UP_ARROW) {
+        if (index > 0) {
+          // eslint-disable-next-line no-plusplus
+          index--;
+        } else {
+          // unless you are on the first tab,
+          // in which case select the last tab.
+          index = $tabLinks.length - 1;
+        }
+        // move right one tab for right and down arrows
+      } else if (k === RIGHT_ARROW || k === DOWN_ARROW) {
+        if (index < $tabLinks.length - 1) {
+          // eslint-disable-next-line no-plusplus
+          index++;
+        } else {
+          // unless you're at the last tab,
+          // in which case select the first one
+          index = 0;
+        }
+      }
+
+      // trigger a click event on the tab to move to
+      $tabLinks.eq(index).focus();
+      $tabLinks.eq(index).click();
+      e.preventDefault();
+    }
+  });
+});
+
+/**
+ * Fix animated icons
+ */
+$(() => {
+  $('.fa-spin').empty();
+});
+
+/**
+ * Inline SVG
+ * @description replace svg image to inline svg
+ */
+$(() => {
+  function inlineSVG() {
+    // eslint-disable-next-line func-names
+    $('img.custom-block__image, [data-svg]').each(function () {
+      const $img = $(this);
+      const imgID = $img.attr('id');
+      const imgClass = $img.attr('class');
+      const imgURL = `${$img.attr('src')}?reset`;
+
+      $.get(
+        imgURL,
+        (data) => {
+          // Get the SVG tag, ignore the rest
+          let $svg = $(data).find('svg');
+
+          // Add replaced image's ID to the new SVG
+          if (typeof imgID !== 'undefined') {
+            $svg = $svg.attr('id', imgID);
+          }
+          // Add replaced image's classes to the new SVG
+          if (typeof imgClass !== 'undefined') {
+            $svg = $svg.attr('class', `${imgClass} replaced-svg`);
+          }
+
+          // Remove any invalid XML tags as per http://validator.w3.org
+          $svg = $svg.removeAttr('xmlns:a');
+          $svg.attr('aria-hidden', true);
+          $svg.attr('focusable', false);
+
+          // Replace image with new SVG
+          $img.replaceWith($svg);
+        },
+        'xml',
+      );
+    });
+  }
+  inlineSVG();
+
+  if (window.LS) {
+    setTimeout(inlineSVG, 100);
+  }
+});

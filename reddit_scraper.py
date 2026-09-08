@@ -31,11 +31,20 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-reddit = praw.Reddit(
-    client_id=os.getenv("REDDIT_CLIENT_ID"),
-    client_secret=os.getenv("REDDIT_CLIENT_SECRET"),
-    user_agent=os.getenv("REDDIT_USER_AGENT"),
-)
+_reddit = None
+
+
+def get_reddit():
+    """Bikin koneksi PRAW cuma pas beneran dipakai, bukan pas modul di-import -
+    biar `python main.py --yt` gak ikut crash gara-gara credential Reddit belum ada."""
+    global _reddit
+    if _reddit is None:
+        _reddit = praw.Reddit(
+            client_id=os.getenv("REDDIT_CLIENT_ID"),
+            client_secret=os.getenv("REDDIT_CLIENT_SECRET"),
+            user_agent=os.getenv("REDDIT_USER_AGENT"),
+        )
+    return _reddit
 
 
 # ============================================================
@@ -116,7 +125,7 @@ def search_posts(keyword, max_results=50, dimension=None):
     """
 
     posts = []
-    subreddit = reddit.subreddit(config.SUBREDDITS)
+    subreddit = get_reddit().subreddit(config.SUBREDDITS)
 
     try:
         for submission in subreddit.search(
@@ -188,7 +197,7 @@ def get_comments(
     comments = []
 
     try:
-        submission = reddit.submission(id=post_id)
+        submission = get_reddit().submission(id=post_id)
 
         submission.comments.replace_more(limit=0)
 

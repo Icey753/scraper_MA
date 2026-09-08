@@ -1,0 +1,45 @@
+(function () {
+  window.Theme = window.Theme || {};
+  
+  const hiddenForms = window.LotusConfig.hidden_forms;
+  const formData = window.LotusConfig.form_data;
+
+  window.Theme.TicketForms = () => ({
+    forms: [],
+    getTicketForms() {
+      // Do nothing if a form is already selected
+      if (LotusUtils.getUrlParameter('ticket_form_id')) {
+        return;
+      }
+
+      const newRequestForm = document.getElementById('new_request');
+
+      // Do nothing if the New Request form does not exist
+      if (!newRequestForm || !LotusUtils.isNewRequestPage()) {
+        return;
+      }
+
+      const ticketFormSelect = newRequestForm.querySelector(
+        '#request_issue_type_select',
+      );
+
+      // Do nothing if the ticket form selector does not exist
+      if (!ticketFormSelect) {
+        return;
+      }
+
+      // Get options from the ticket form selector
+      const forms = [...ticketFormSelect.querySelectorAll('option')]
+        .filter(option => option.value !== '-' && !hiddenForms.includes(Number(option.value)))
+        .map(option => ({
+          name: option.text,
+          value: option.value,
+          url: option.getAttribute('data-url'),
+          ...(formData[option.value] && {desc: formData[option.value]})
+        }));
+
+      this.forms = forms;
+
+    },
+  });
+}());

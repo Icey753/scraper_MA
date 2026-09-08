@@ -1,0 +1,152 @@
+(function () {
+  'use strict';
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties(Constructor, staticProps);
+    return Constructor;
+  }
+
+  var isArticlePage = function isArticlePage() {
+    return window.location.pathname.indexOf('/articles/') !== -1;
+  };
+  var getArticleId = function getArticleId() {
+    return parseInt(window.location.pathname.replace(/\/hc\/([a-zA-Z_-]+\/)?articles\/([0-9]+)[\S]*$/i, '$2'));
+  };
+
+  var defaults = {
+    classNameBtn: "",
+    classNameDisableBtn: "prevnext__btn--disabled",
+    showArticleTitle: true,
+    prev: "Prev",
+    next: "Next",
+    labels: '',
+    showIfLabel: '',
+    hideIfLabel: ''
+  };
+
+  var PrevNext = /*#__PURE__*/function () {
+    function PrevNext(i, $element, options) {
+      _classCallCheck(this, PrevNext);
+
+      this.data = {};
+      this.siblingArticles = {};
+      this.articleId = null;
+      this.index = i;
+      this.$element = $element;
+      this.$window = $(window);
+      this.$head = $('head');
+      this.options = $.extend({}, defaults, options);
+
+      if (isArticlePage()) {
+        if (!this.options.showIfLabel && !this.options.hideIfLabel) {
+          this.init();
+        }
+
+        if (this.options.showIfLabel && this.options.labels.includes(this.options.showIfLabel)) {
+          this.init();
+        }
+
+        if (this.options.hideIfLabel && !this.options.labels.includes(this.options.hideIfLabel)) {
+          this.init();
+        }
+      }
+    }
+
+    _createClass(PrevNext, [{
+      key: "init",
+      value: function init() {
+        this.$window.on('apiDataFetched', this.handleDataFetched.bind(this));
+        this.$window.on('apiDataUpdated', this.handleDataUpdated.bind(this));
+        this.$window.on('apiDataDeleted', this.handleDataDeleted.bind(this));
+      }
+    }, {
+      key: "handleDataFetched",
+      value: function handleDataFetched(e, data) {
+        this.data = data;
+        this.articleId = getArticleId();
+        this.setArticlesInThisSection();
+        this.createButtons();
+      }
+    }, {
+      key: "handleDataUpdated",
+      value: function handleDataUpdated(e, data) {
+        this.data = data;
+        this.setArticlesInThisSection();
+        this.createButtons();
+      }
+    }, {
+      key: "handleDataDeleted",
+      value: function handleDataDeleted(e, data) {
+        this.data = data;
+        this.siblingArticles.prev = null;
+        this.siblingArticles.next = null;
+        this.createButtons();
+      }
+    }, {
+      key: "setArticlesInThisSection",
+      value: function setArticlesInThisSection() {
+        var _this = this;
+
+        if (this.articleId) {
+          var articlesInThisSection = ApiData.filterBySiblingsArticlesId(this.data, this.articleId);
+          var sortedArticlesInThisSection = ApiData.sortBy(articlesInThisSection, "position").articles;
+          sortedArticlesInThisSection.filter(function (article, index) {
+            if (article.id === _this.articleId) {
+              _this.siblingArticles = {
+                current: article,
+                prev: index !== 0 ? sortedArticlesInThisSection[index - 1] : null,
+                next: index !== sortedArticlesInThisSection.length - 1 ? sortedArticlesInThisSection[index + 1] : null
+              };
+            }
+          });
+        }
+      }
+    }, {
+      key: "createButtons",
+      value: function createButtons() {
+        this.$head.find('#prev-next-styles').remove();
+        this.$head.append("\n      <style id=\"prev-next-styles\">\n        .prevnext {\n          width: 100%;\n          margin-bottom: 32px;\n          display: -ms-grid;\n          display: grid;\n              grid-gap: 32px;\n        }\n\n        @media (min-width: 768px) {\n          .prevnext {\n            -ms-grid-columns: 1fr 32px 1fr;\n            grid-template-columns: 1fr 1fr;\n          }\n        }\n\n        .prevnext__btn {\n          display: block;\n          border: 2px solid #eceeef;\n          border-radius: 4px;\n          padding: 8px 16px;\n          color: #000;\n        }\n\n        .prevnext__name {\n          display: block;\n          font-weight: bold;\n          font-size: 11px;\n          text-transform: uppercase;\n        }\n\n        span.prevnext__btn {\n          cursor: default;\n        }\n\n        .prevnext__btn--next {\n          text-align: right;\n        }\n\n        .prevnext__title {\n          padding-top: 8px;\n        }\n      </style>\n    ");
+        this.$element.html("\n      <div class=\"prevnext prevnext_".concat(this.index, "\">\n        ").concat(this.getButton('prev'), "\n        ").concat(this.getButton('next'), "\n      </div>\n    "));
+      }
+    }, {
+      key: "getTitle",
+      value: function getTitle(name) {
+        return this.options.showArticleTitle ? "<span class=\"prevnext__title\">".concat(this.siblingArticles[name].title, "</span>") : '';
+      }
+    }, {
+      key: "getButton",
+      value: function getButton(name) {
+        var className = "prevnext__btn prevnext__btn--".concat(name);
+        return this.siblingArticles[name] ? "<a href=\"".concat(this.siblingArticles[name].html_url, "\"\n            title=\"").concat(this.siblingArticles[name].title, "\"\n            class=\"").concat(this.options.classNameBtn, " ").concat(className, "\">\n            <span class=\"prevnext__name\">\n             ").concat(name === "prev" ? "<span class=\"prevnext__icon fa fa-angle-left\"></span>" : "", "\n            ").concat(this.options[name], "\n            ").concat(name === "next" ? "<span class=\"prevnext__icon fa fa-angle-right\"></span>" : "", "\n            </span>\n              ").concat(this.getTitle(name), "\n        </a>") : "<span></span>";
+      }
+    }]);
+
+    return PrevNext;
+  }();
+
+  $(function () {
+    $('[data-prevnext]').each(function (i, element) {
+      var $element = $(element);
+      var options = $element.data('prevnext') || {};
+      new PrevNext(i, $element, options);
+    });
+  });
+
+})();
