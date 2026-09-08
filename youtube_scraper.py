@@ -8,9 +8,12 @@ Quota cost:
 """
 
 import os
+import re
 import csv
+import json
 import time
 import logging
+import argparse
 from datetime import datetime, timedelta, timezone
 
 from dotenv import load_dotenv
@@ -33,8 +36,9 @@ youtube = build("youtube", "v3", developerKey=API_KEY)
 
 VIDEO_CSV = "output/youtube_videos.csv"
 COMMENT_CSV = "output/youtube_comments.csv"
+RAW_SEARCH_CACHE = "output/_raw_search_cache.json"
 
-VIDEO_FIELDS = ["video_id", "title", "channel", "published_at", "keyword"]
+VIDEO_FIELDS = ["video_id", "title", "channel", "published_at", "keyword", "category"]
 COMMENT_FIELDS = [
     "video_id",
     "comment_id",
@@ -46,6 +50,8 @@ COMMENT_FIELDS = [
     "video_title",
     "channel",
     "keyword",
+    "category",
+    "mentions_website_experience",
 ]
 
 
@@ -72,10 +78,41 @@ def append_rows(filepath, rows, fieldnames):
         writer.writerows(rows)
 
 
-def is_relevant(title):
-    """True kalau title ngandung minimal satu term wajib (case-insensitive)."""
-    text = f" {title.lower()} "
-    return any(term.lower() in text for term in config.RELEVANCE_FILTER_TERMS)
+def mentions_ma_abbreviation(text):
+    """Deteksi abbreviation 'MA' pake word boundary regex, biar tetep kedeteksi
+    walau nempel tanda baca (mis. 'Putusan MA,' atau '"MA" resmi')."""
+    return bool(re.search(r"\bma\b", text, re.IGNORECASE))
+
+
+def is_relevant(title, category="institusional"):
+    """True kalau title ngandung minimal satu term wajib buat kategori terkait.
+    Institusional dan tutorial_website punya term list beda - tutorial jarang
+    nyebut 'Mahkamah Agung' eksplisit walau isinya tentang sistem MA (e-Court/SIPP)."""
+    text = title.lower()
+    if mentions_ma_abbreviation(title):
+        return True
+    terms = (
+        config.WEBSITE_RELEVANCE_TERMS
+        if category == "tutorial_website"
+        else config.INSTITUTIONAL_RELEVANCE_TERMS
+    )
+    return any(term.lower() in text for term in terms if term.strip() != "ma")
+
+
+def is_excluded(title, channel=""):
+    """True kalau title ATAU nama channel kena EXCLUDE_TERMS (misal konten/kanal
+    Mahkamah Konstitusi) dan gak nyebut Mahkamah Agung secara eksplisit di title."""
+    text = f" {title.lower()} {channel.lower()} "
+    mentions_exclude = any(term.lower() in text for term in config.EXCLUDE_TERMS)
+    mentions_ma = ("mahkamah agung" in text) or mentions_ma_abbreviation(title)
+    return mentions_exclude and not mentions_ma
+
+
+def mentions_website_experience(text):
+    """True kalau komentar ngandung istilah yang nunjukin pengalaman pakai
+    website/aplikasi (error, lemot, susah diakses, dst) - bukan cuma bahas kasus hukum."""
+    text_lower = text.lower()
+    return any(term in text_lower for term in config.COMMENT_EXPERIENCE_TERMS)
 
 
 def resolve_channel_ids(handles):
@@ -95,7 +132,7 @@ def resolve_channel_ids(handles):
     return ids
 
 
-def search_videos(keyword, max_results=15, channel_id=None):
+def search_videos(keyword, max_results=15, channel_id=None, category="institusional"):
     """Search video by keyword, return list of video_id + metadata.
     Kalau channel_id diisi, search dibatasi ke channel itu doang."""
     published_after = (
@@ -133,6 +170,7 @@ def search_videos(keyword, max_results=15, channel_id=None):
                     "channel": item["snippet"]["channelTitle"],
                     "published_at": item["snippet"]["publishedAt"],
                     "keyword": keyword,
+                    "category": category,
                 }
             )
 
@@ -140,7 +178,10 @@ def search_videos(keyword, max_results=15, channel_id=None):
         if not next_page_token:
             break
 
-    logger.info(f"Keyword '{keyword}' (channel_id={channel_id}): ditemukan {len(videos)} video mentah")
+    logger.info(
+        f"Keyword '{keyword}' (channel_id={channel_id}, category={category}): "
+        f"ditemukan {len(videos)} video mentah"
+    )
     return videos
 
 
@@ -167,15 +208,17 @@ def get_comments(video_id, max_comments=200):
 
         for item in response.get("items", []):
             top = item["snippet"]["topLevelComment"]["snippet"]
+            comment_text = top["textDisplay"]
             comments.append(
                 {
                     "video_id": video_id,
                     "comment_id": item["snippet"]["topLevelComment"]["id"],
                     "author": top["authorDisplayName"],
-                    "text": top["textDisplay"],
+                    "text": comment_text,
                     "like_count": top["likeCount"],
                     "published_at": top["publishedAt"],
                     "reply_count": item["snippet"]["totalReplyCount"],
+                    "mentions_website_experience": mentions_website_experience(comment_text),
                 }
             )
 
@@ -186,25 +229,73 @@ def get_comments(video_id, max_comments=200):
     return comments
 
 
-def run():
-    existing_video_ids = load_existing_ids(VIDEO_CSV, "video_id")
-    logger.info(f"Video yang udah ada di {VIDEO_CSV}: {len(existing_video_ids)}")
-
+def fetch_raw_videos():
+    """Bagian MAHAL - manggil YouTube search API. Cuma dipanggil di mode normal,
+    hasilnya di-cache ke RAW_SEARCH_CACHE biar bisa di-refilter tanpa API call lagi."""
     channel_ids = resolve_channel_ids(config.CHANNEL_HANDLES) if config.CHANNEL_HANDLES else []
     if config.CHANNEL_HANDLES and not channel_ids:
         logger.warning("CHANNEL_HANDLES diisi tapi gak ada yang berhasil di-resolve, search jalan tanpa restriction")
 
     all_videos = []
+
+    # Pass 1: keyword institusional, dibatasi ke kanal berita (kalau ada)
     for keyword in config.KEYWORDS:
         if channel_ids:
             for cid in channel_ids:
-                videos = search_videos(keyword, max_results=config.MAX_VIDEOS_PER_KEYWORD, channel_id=cid)
+                videos = search_videos(
+                    keyword, max_results=config.MAX_VIDEOS_PER_KEYWORD, channel_id=cid, category="institusional"
+                )
                 all_videos.extend(videos)
                 time.sleep(0.3)
         else:
-            videos = search_videos(keyword, max_results=config.MAX_VIDEOS_PER_KEYWORD)
+            videos = search_videos(keyword, max_results=config.MAX_VIDEOS_PER_KEYWORD, category="institusional")
             all_videos.extend(videos)
-        time.sleep(0.5)  # jaga-jaga rate limit
+        time.sleep(0.5)
+
+    # Pass 2: keyword tutorial/how-to soal website/aplikasi MA, LINTAS SEMUA KANAL
+    # (gak dibatasi channel_ids - tutorial gini biasanya dari creator individu)
+    for keyword in config.WEBSITE_KEYWORDS:
+        videos = search_videos(keyword, max_results=config.MAX_VIDEOS_PER_KEYWORD, category="tutorial_website")
+        all_videos.extend(videos)
+        time.sleep(0.5)
+
+    # Simpan mentah ke cache SEBELUM difilter, biar run --refilter berikutnya
+    # bisa nge-tweak config.py (RELEVANCE_TERMS, EXCLUDE_TERMS, dll) tanpa
+    # manggil search API lagi sama sekali (nol quota).
+    with open(RAW_SEARCH_CACHE, "w", encoding="utf-8") as f:
+        json.dump(
+            {"cached_at": datetime.now(timezone.utc).isoformat(), "videos": all_videos},
+            f,
+            ensure_ascii=False,
+            indent=2,
+        )
+    logger.info(f"Cache mentah disimpan: {len(all_videos)} video -> {RAW_SEARCH_CACHE}")
+
+    return all_videos
+
+
+def load_cached_videos():
+    """Bagian GRATIS - baca hasil search yang udah di-cache dari run sebelumnya.
+    Dipake pas --refilter, buat ngetes perubahan config.py tanpa buang quota API."""
+    if not os.path.exists(RAW_SEARCH_CACHE):
+        raise FileNotFoundError(
+            f"{RAW_SEARCH_CACHE} belum ada - jalanin dulu 'python youtube_scraper.py' "
+            f"(mode normal, manggil API) minimal sekali sebelum pake --refilter."
+        )
+    with open(RAW_SEARCH_CACHE, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    logger.info(f"Load {len(data['videos'])} video dari cache (disimpan {data['cached_at']})")
+    return data["videos"]
+
+
+def run(use_cache=False):
+    existing_video_ids = load_existing_ids(VIDEO_CSV, "video_id")
+    logger.info(f"Video yang udah ada di {VIDEO_CSV}: {len(existing_video_ids)}")
+
+    if use_cache:
+        all_videos = load_cached_videos()
+    else:
+        all_videos = fetch_raw_videos()
 
     # Dedup video by video_id (bisa muncul di lebih dari satu keyword/channel dalam run yang sama)
     seen = set()
@@ -217,25 +308,35 @@ def run():
     # Buang video yang title-nya gak ngandung term wajib apapun (nyaring hasil
     # "relevance fallback" YouTube yang ngasal - drama, DJ remix, dll)
     before_filter = len(unique_videos)
-    unique_videos = [v for v in unique_videos if is_relevant(v["title"])]
+    unique_videos = [v for v in unique_videos if is_relevant(v["title"], v["category"])]
     dropped_irrelevant = before_filter - len(unique_videos)
+
+    # Buang video yang keknya soal Mahkamah Konstitusi (MK), bukan Mahkamah Agung (MA)
+    before_exclude = len(unique_videos)
+    unique_videos = [v for v in unique_videos if not is_excluded(v["title"], v["channel"])]
+    dropped_mk = before_exclude - len(unique_videos)
 
     # Skip video yang udah pernah discrap di run sebelumnya
     new_videos = [v for v in unique_videos if v["video_id"] not in existing_video_ids]
     skipped = len(unique_videos) - len(new_videos)
     logger.info(
-        f"Hasil search: {before_filter} video unik mentah, "
+        f"Hasil {'cache' if use_cache else 'search'}: {before_filter} video unik mentah, "
         f"{dropped_irrelevant} dibuang (gak relevan), "
+        f"{dropped_mk} dibuang (konten MK bukan MA), "
         f"{skipped} udah pernah discrap (skip), {len(new_videos)} baru"
     )
 
     total_comments = 0
+    total_experience_comments = 0
     for v in new_videos:
         comments = get_comments(v["video_id"])
         for c in comments:
             c["video_title"] = v["title"]
             c["channel"] = v["channel"]
             c["keyword"] = v["keyword"]
+            c["category"] = v["category"]
+            if c["mentions_website_experience"]:
+                total_experience_comments += 1
 
         # Tulis langsung per-video (append), biar kalau script keputus di tengah
         # jalan, data yang udah kepegang gak ilang dan run berikutnya gak scrap ulang.
@@ -245,13 +346,26 @@ def run():
         total_comments += len(comments)
         time.sleep(0.3)
 
-    logger.info(f"Selesai. {len(new_videos)} video baru, {total_comments} komentar baru ditambahkan.")
+    logger.info(
+        f"Selesai. {len(new_videos)} video baru, {total_comments} komentar baru "
+        f"({total_experience_comments} nyebut pengalaman website)."
+    )
     print(
-        f"Done: {len(new_videos)} video baru ditambahkan "
-        f"({dropped_irrelevant} dibuang gak relevan, {skipped} video lama di-skip), "
-        f"{total_comments} komentar baru -> {VIDEO_CSV} / {COMMENT_CSV}"
+        f"Done ({'refilter dari cache, 0 quota API' if use_cache else 'search API'}): "
+        f"{len(new_videos)} video baru ditambahkan "
+        f"({dropped_irrelevant} dibuang gak relevan, {dropped_mk} dibuang konten MK, {skipped} video lama di-skip), "
+        f"{total_comments} komentar baru ({total_experience_comments} nyebut pengalaman website) "
+        f"-> {VIDEO_CSV} / {COMMENT_CSV}"
     )
 
 
 if __name__ == "__main__":
-    run()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--refilter",
+        action="store_true",
+        help="Pake hasil search yang udah di-cache, gak manggil API sama sekali (0 quota). "
+        "Buat testing perubahan RELEVANCE_TERMS/EXCLUDE_TERMS di config.py.",
+    )
+    args = parser.parse_args()
+    run(use_cache=args.refilter)

@@ -70,3 +70,6 @@ Log tiap run ada di folder `logs/`.
 
 - Tambahin script sentiment labeling / kategorisasi isu (misal pake IndoBERT atau keyword-based tagging) buat tahap analisis
 - Convert CSV output ke format yang gampang di-import ke tool riset UX (affinity diagram, tabel pain point, dll)
+
+
+note : revisi perubahan dengan menjadikan tren analisis tentang reputasi mahkamah agung
