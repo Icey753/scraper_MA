@@ -1,0 +1,8 @@
+2026-09-08 08:58:38,126 INFO Load 1773 komentar dari output/youtube_comments.csv
+2026-09-08 08:58:38,387 INFO Selesai. 1773 komentar: 135 positif, 1584 netral, 54 negatif
+2026-09-08 08:59:52,896 INFO Load 1773 komentar dari output/youtube_comments.csv
+2026-09-08 08:59:53,229 INFO Selesai. 1773 komentar: 75 positif, 1642 netral, 56 negatif
+2026-09-08 22:29:25,259 INFO Load 11152 komentar dari output/youtube_comments.csv
+2026-09-08 22:29:26,116 INFO Selesai. 11152 komentar: 826 positif, 9280 netral, 1046 negatif
+2026-09-11 15:57:40,912 INFO Load 24196 komentar dari output/youtube_comments.csv
+2026-09-11 15:57:44,979 INFO Selesai. 24196 komentar: 1616 positif, 19788 netral, 2792 negatif

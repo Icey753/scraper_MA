@@ -13,9 +13,6 @@ __pycache__/
 venv/
 env/
 
-# Generated scraper data and logs
-logs/
-output/
 
 # Local editor and OS files
 .vscode/
